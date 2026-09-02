@@ -21,8 +21,14 @@ export class Multiplayer {
   private client?: MqttClient
   private topic = ''
   private startHandler: (startAt: number) => void = () => {}
+  private rosterHandler: (players: Peer[]) => void = () => {}
+  private presenceHandler: (name: string, action: 'joined' | 'left') => void = () => {}
+  private heartbeat?: number
+  private localPlayer: Omit<Peer, 'seen'>
 
-  constructor(private name: () => string) {}
+  constructor(private name: () => string) {
+    this.localPlayer = { id: this.id, name: this.name(), x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0, score: 0 }
+  }
 
   async createRoom() {
     const room = generateRoomCode()
@@ -35,6 +41,14 @@ export class Multiplayer {
 
   onRaceStart(handler: (startAt: number) => void) {
     this.startHandler = handler
+  }
+
+  onRosterChange(handler: (players: Peer[]) => void) {
+    this.rosterHandler = handler
+  }
+
+  onPresence(handler: (name: string, action: 'joined' | 'left') => void) {
+    this.presenceHandler = handler
   }
 
   startRace() {
@@ -66,6 +80,8 @@ export class Multiplayer {
         try { this.receive(JSON.parse(payload.toString()) as RoomMessage) } catch { /* Ignore unrelated public-broker traffic. */ }
       })
       await client.subscribeAsync(this.topic, { qos: 0 })
+      this.publishLocalState()
+      this.heartbeat = window.setInterval(() => this.publishLocalState(), 1000)
       return room
     } catch {
       this.disconnect()
@@ -74,11 +90,10 @@ export class Multiplayer {
   }
 
   send(state: KartState, score: number) {
-    if (!this.client?.connected) return
-    const message: RoomMessage = { type: 'state', player: { ...state, id: this.id, name: this.name(), score } }
-    this.client.publish(this.topic, JSON.stringify(message), { qos: 0 })
+    this.localPlayer = { ...state, id: this.id, name: this.name(), score }
+    this.publishLocalState()
     const stale = performance.now() - 3000
-    for (const [id, player] of this.peers) if (player.seen < stale) this.peers.delete(id)
+    for (const [id, player] of this.peers) if (player.seen < stale) this.removePeer(id)
   }
 
   disconnect() {
@@ -87,6 +102,8 @@ export class Multiplayer {
       this.client.end(true)
     }
     this.client = undefined
+    clearInterval(this.heartbeat)
+    this.heartbeat = undefined
     this.topic = ''
     this.room = ''
     this.peers.clear()
@@ -94,11 +111,29 @@ export class Multiplayer {
 
   private receive(message: RoomMessage) {
     if (message.type === 'state' && message.player.id !== this.id) {
+      const isNew = !this.peers.has(message.player.id)
       this.peers.set(message.player.id, { ...message.player, seen: performance.now() })
+      this.rosterHandler([...this.peers.values()])
+      if (isNew) this.presenceHandler(message.player.name, 'joined')
     } else if (message.type === 'left') {
-      this.peers.delete(message.id)
+      this.removePeer(message.id)
     } else if (message.type === 'start' && Number.isFinite(message.startAt)) {
       this.startHandler(message.startAt)
     }
+  }
+
+  private publishLocalState() {
+    if (!this.client?.connected) return
+    this.localPlayer.name = this.name()
+    const message: RoomMessage = { type: 'state', player: this.localPlayer }
+    this.client.publish(this.topic, JSON.stringify(message), { qos: 0 })
+  }
+
+  private removePeer(id: string) {
+    const player = this.peers.get(id)
+    if (!player) return
+    this.peers.delete(id)
+    this.rosterHandler([...this.peers.values()])
+    this.presenceHandler(player.name, 'left')
   }
 }
