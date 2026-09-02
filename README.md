@@ -1,10 +1,10 @@
 # FakeKarts
 
-A tiny browser-based 3D toon kart arena with real-time WebSocket rooms. Enter the same room code on any device connected to the server to drive together.
+A tiny browser-based 3D toon kart arena with peer-to-peer multiplayer rooms. Create a room, share its six-character code, and compete for the top spot on the distance leaderboard.
 
 ```sh
 npm install
 npm run dev
 ```
 
-`npm test` checks the arcade driving model and the multiplayer room relay. `npm run build && npm start` serves the production game and WebSocket server. Deploy it to a Node.js host (rather than static-only hosting) so multiplayer connections can reach the relay.
+`npm test` checks the arcade driving model and `npm run build` creates the production bundle. Multiplayer uses WebRTC through PeerJS Cloud signaling, so the game works on static hosts such as Vercel without a separate WebSocket server. The room creator must remain online while others play.

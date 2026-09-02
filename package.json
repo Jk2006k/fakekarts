@@ -4,15 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "vite",
     "build": "node node_modules/typescript/bin/tsc && node node_modules/vite/bin/vite.js build",
-    "test": "node --test test/*.test.js && node node_modules/typescript/bin/tsc --outDir .check --noEmit false && node --test .check/game/*.test.js",
-    "start": "node server.js --production",
-    "preview": "npm run start"
+    "test": "node node_modules/typescript/bin/tsc --outDir .check --noEmit false && node --test .check/game/*.test.js",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "three": "^0.180.0",
-    "ws": "^8.18.3"
+    "peerjs": "^1.5.5",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",
