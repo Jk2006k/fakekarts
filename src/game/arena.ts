@@ -1,13 +1,39 @@
 import * as THREE from 'three'
 import type { KartState } from './physics'
 
-const toon = (color: THREE.ColorRepresentation) => new THREE.MeshToonMaterial({ color })
-const floorMesh = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, y = 0) => {
-  const item = new THREE.Mesh(geometry, toon(color))
+const toon = (color: THREE.ColorRepresentation, map?: THREE.Texture) => new THREE.MeshToonMaterial({ color, map })
+const floorMesh = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, y = 0, map?: THREE.Texture) => {
+  const item = new THREE.Mesh(geometry, toon(color, map))
   item.position.y = y
   item.rotation.x = -Math.PI / 2
   item.receiveShadow = true
   return item
+}
+
+const concreteTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 512
+  const context = canvas.getContext('2d')!
+  context.fillStyle = '#b7acd5'
+  context.fillRect(0, 0, 512, 512)
+  context.strokeStyle = 'rgba(83, 69, 126, .22)'
+  context.lineWidth = 3
+  for (let line = 0; line <= 512; line += 64) {
+    context.beginPath(); context.moveTo(line, 0); context.lineTo(line, 512); context.stroke()
+    context.beginPath(); context.moveTo(0, line); context.lineTo(512, line); context.stroke()
+  }
+  let seed = 23
+  const random = () => ((seed = seed * 16807 % 2147483647) - 1) / 2147483646
+  for (let i = 0; i < 750; i++) {
+    context.fillStyle = random() > .5 ? 'rgba(255,255,255,.12)' : 'rgba(66,53,105,.1)'
+    const size = 1 + random() * 4
+    context.fillRect(random() * 512, random() * 512, size, size)
+  }
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+  texture.repeat.set(5, 5)
+  texture.colorSpace = THREE.SRGBColorSpace
+  return texture
 }
 
 const groundPrint = (text: string, width: number, z: number) => {
@@ -37,7 +63,7 @@ export function createArena(scene: THREE.Scene) {
   scene.fog = new THREE.Fog('#8bd8ff', 105, 210)
   scene.add(
     floorMesh(new THREE.CircleGeometry(82, 96), '#c8b8e8'),
-    floorMesh(new THREE.CircleGeometry(76, 96), '#a99bd3', .025),
+    floorMesh(new THREE.CircleGeometry(76, 96), '#ffffff', .025, concreteTexture()),
   )
 
   for (const radius of [13, 35, 58]) scene.add(floorMesh(new THREE.RingGeometry(radius - .18, radius + .18, 96), '#dcd3f3', .05))

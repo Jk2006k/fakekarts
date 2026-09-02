@@ -6,6 +6,7 @@ type Particle = { mesh: THREE.Mesh; velocity: THREE.Vector3; life: number; smoke
 export class Effects {
   private particles: Particle[] = []
   private smokeTimer = 0
+  private driftTimer = 0
   private smokeGeometry = new THREE.SphereGeometry(.42, 7, 5)
   private debrisGeometry = new THREE.BoxGeometry(.35, .18, .7)
 
@@ -18,6 +19,21 @@ export class Effects {
     this.spawn(
       new THREE.Vector3(state.x - Math.sin(state.heading) * 2.4, (state.y ?? 0) + .75, state.z - Math.cos(state.heading) * 2.4),
       new THREE.Vector3((Math.random() - .5) * .7, 1.3 + Math.random(), (Math.random() - .5) * .7),
+      true,
+    )
+  }
+
+  drift(state: KartState, dt: number) {
+    this.driftTimer -= dt
+    if (Math.abs(state.drift ?? 0) < .08 || Math.abs(state.speed) < 8 || this.driftTimer > 0 || (state.y ?? 0) > .3) return
+    this.driftTimer = .035
+    for (const side of [-1, 1]) this.spawn(
+      new THREE.Vector3(
+        state.x - Math.sin(state.heading) * 1.35 + Math.cos(state.heading) * side * 1.35,
+        .42,
+        state.z - Math.cos(state.heading) * 1.35 - Math.sin(state.heading) * side * 1.35,
+      ),
+      new THREE.Vector3((Math.random() - .5) * .4, .7 + Math.random() * .5, (Math.random() - .5) * .4),
       true,
     )
   }
