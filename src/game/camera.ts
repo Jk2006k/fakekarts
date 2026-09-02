@@ -2,8 +2,14 @@ import * as THREE from 'three'
 import type { KartState } from './physics'
 import type { GameSettings } from './settings'
 
+export const stepReverseView = (current: number, speed: number, dt: number) => {
+  const target = speed < -.5 ? 1 : 0
+  return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-5 * dt))
+}
+
 export class ChaseCamera {
   private lookAt = new THREE.Vector3()
+  private reverseView = 0
 
   constructor(private camera: THREE.PerspectiveCamera) {}
 
@@ -16,15 +22,18 @@ export class ChaseCamera {
   update(state: KartState, dt: number, settings: GameSettings) {
     const speed = Math.abs(state.speed)
     const distance = settings.cameraDistance + speed * .06
+    this.reverseView = stepReverseView(this.reverseView, state.speed, dt)
+    const cameraHeading = state.heading + Math.PI * this.reverseView
     const desired = new THREE.Vector3(
-      state.x - Math.sin(state.heading) * distance,
+      state.x - Math.sin(cameraHeading) * distance,
       (state.y ?? 0) + settings.cameraHeight + speed * .025,
-      state.z - Math.cos(state.heading) * distance,
+      state.z - Math.cos(cameraHeading) * distance,
     )
+    const focusDirection = Math.cos(Math.PI * this.reverseView)
     const focus = new THREE.Vector3(
-      state.x + Math.sin(state.heading) * (3 + speed * .1),
+      state.x + Math.sin(state.heading) * (3 + speed * .1) * focusDirection,
       (state.y ?? 0) + 1.3,
-      state.z + Math.cos(state.heading) * (3 + speed * .1),
+      state.z + Math.cos(state.heading) * (3 + speed * .1) * focusDirection,
     )
     this.camera.position.lerp(desired, 1 - Math.exp(-6 * dt))
     this.lookAt.lerp(focus, 1 - Math.exp(-9 * dt))
