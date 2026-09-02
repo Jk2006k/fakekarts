@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { stepKart } from './physics.js'
+import { stepGravity, stepKart } from './physics.js'
 
 test('kart accelerates, turns, and respects top speed', () => {
   let kart = { x: 0, z: 0, heading: 0, speed: 0 }
@@ -8,4 +8,13 @@ test('kart accelerates, turns, and respects top speed', () => {
   assert.ok(kart.speed <= 32 && kart.speed > 25)
   assert.notEqual(kart.heading, 0)
   assert.notEqual(kart.x, 0)
+})
+
+test('kart launches from a ramp and gravity lands it', () => {
+  const kart = { x: 0, z: 0, heading: 0, speed: 25, y: 4, verticalSpeed: 0 }
+  stepGravity(kart, 0, 4, 1 / 60)
+  assert.ok(kart.verticalSpeed > 0)
+  for (let i = 0; i < 120; i++) stepGravity(kart, 0, 0, 1 / 60)
+  assert.equal(kart.y, 0)
+  assert.equal(kart.verticalSpeed, 0)
 })

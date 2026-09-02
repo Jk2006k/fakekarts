@@ -15,6 +15,10 @@ test('fast karts break crates and ramps raise karts', () => {
   const cube = obstacles.find(obstacle => !obstacle.breakable)!
   const slowKart = { x: cube.x, z: cube.z, heading: 0, speed: 5 }
   resolveObstacleCollisions(slowKart, obstacles)
-  assert.ok(Math.abs(Math.hypot(slowKart.x - cube.x, slowKart.z - cube.z) - cube.radius) < 1e-9)
+  assert.ok(Math.abs(Math.hypot(slowKart.x - cube.x, slowKart.z - cube.z) - (cube.radius + 1.8)) < 1e-9)
   assert.ok(slowKart.speed < 0)
+
+  const airborneKart = { x: cube.x, y: 8, z: cube.z, heading: 0, speed: 5 }
+  resolveObstacleCollisions(airborneKart, obstacles)
+  assert.equal(airborneKart.speed, 5)
 })

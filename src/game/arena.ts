@@ -10,6 +10,28 @@ const floorMesh = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentat
   return item
 }
 
+const groundPrint = (text: string, width: number, z: number) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1024
+  canvas.height = 256
+  const context = canvas.getContext('2d')!
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.font = '900 150px Arial Black, sans-serif'
+  context.lineWidth = 22
+  context.strokeStyle = '#55477f'
+  context.strokeText(text, 512, 128)
+  context.fillStyle = '#fff2bd'
+  context.fillText(text, 512, 128)
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, width / 4),
+    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false }),
+  )
+  label.rotation.x = -Math.PI / 2
+  label.position.set(0, .09, z)
+  return label
+}
+
 export function createArena(scene: THREE.Scene) {
   scene.background = new THREE.Color('#8bd8ff')
   scene.fog = new THREE.Fog('#8bd8ff', 105, 210)
@@ -20,6 +42,7 @@ export function createArena(scene: THREE.Scene) {
 
   for (const radius of [13, 35, 58]) scene.add(floorMesh(new THREE.RingGeometry(radius - .18, radius + .18, 96), '#dcd3f3', .05))
   scene.add(floorMesh(new THREE.CircleGeometry(3.8, 24), '#ffd447', .06))
+  scene.add(groundPrint('FAKE KARTS', 34, -48), groundPrint('SMASH  SLIDE  SEND IT', 38, 49))
 
   const wall = new THREE.Mesh(new THREE.TorusGeometry(79, 2.4, 8, 96), toon('#4b3f72'))
   wall.position.y = 1.3
