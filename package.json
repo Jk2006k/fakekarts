@@ -1,0 +1,21 @@
+{
+  "name": "fakekarts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "rm -rf .check && tsc --outDir .check --noEmit false && node --test .check/game/physics.test.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/three": "^0.185.4",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
