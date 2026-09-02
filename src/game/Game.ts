@@ -4,6 +4,7 @@ import { updateHud } from './hud'
 import { bindControls } from './input'
 import { createKart } from './kart'
 import { Multiplayer } from './multiplayer'
+import { createObstacles, rampHeightAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
 import { stepKart, type Controls, type KartState } from './physics'
 
 export class Game {
@@ -14,6 +15,7 @@ export class Game {
   private rival = createKart('#30a9ff')
   private remotes = new Map<string, THREE.Group>()
   private multiplayer: Multiplayer
+  private obstacles: Obstacle[]
   private state: KartState = { x: 0, z: 12, heading: 0, speed: 0 }
   private controls: Controls = { forward: false, back: false, left: false, right: false }
   private clock = new THREE.Clock()
@@ -27,6 +29,7 @@ export class Game {
     this.renderer.shadowMap.enabled = true
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     createArena(this.scene)
+    this.obstacles = createObstacles(this.scene)
     this.scene.add(this.kart, this.rival)
     this.camera.position.set(0, 8, 23)
     this.camera.lookAt(0, 1, 10)
@@ -57,7 +60,8 @@ export class Game {
   private update(dt: number) {
     this.state = stepKart(this.state, this.controls, dt)
     containInArena(this.state)
-    this.kart.position.set(this.state.x, .12, this.state.z)
+    resolveObstacleCollisions(this.state, this.obstacles)
+    this.kart.position.set(this.state.x, .12 + rampHeightAt(this.state.x, this.state.z), this.state.z)
     this.kart.rotation.y = this.state.heading
 
     this.aiAngle += dt * .45

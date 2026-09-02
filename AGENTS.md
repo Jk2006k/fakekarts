@@ -12,6 +12,7 @@
 - `src/game/Game.ts` only coordinates the render loop and game systems.
 - `src/game/arena.ts` owns arena geometry, lighting, and arena boundaries.
 - `src/game/kart.ts` owns the procedural kart model.
+- `src/game/obstacles.ts` owns playground props, ramps, and obstacle collisions.
 - `src/game/physics.ts` owns deterministic kart movement.
 - `src/game/input.ts` maps keyboard and touch input to controls.
 - `src/game/hud.ts` updates in-game interface values.
