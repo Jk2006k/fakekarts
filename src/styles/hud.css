@@ -13,6 +13,12 @@
 .players { position: absolute; top: 95px; right: 28px; display: grid; gap: 7px; font-size: 9px; text-align: right; }
 .players span { background: rgba(9,29,45,.55); padding: 6px 9px; border-radius: 4px; }
 .players i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; }
+.leaderboard { position: absolute; top: 190px; right: 28px; width: 190px; padding: 12px; border-radius: 8px; background: rgba(9,29,45,.65); display: grid; gap: 7px; }
+.leaderboard > b { color: #ffd447; font: 11px 'Archivo Black'; letter-spacing: 1px; }
+.leaderboard span { display: grid; grid-template-columns: 20px 1fr auto; gap: 6px; align-items: center; font-size: 9px; }
+.leaderboard span i { color: #8bd7ff; font-style: normal; }
+.leaderboard span em { overflow: hidden; color: #fff; font-style: normal; text-overflow: ellipsis; }
+.leaderboard span strong { color: #ffd447; font-weight: normal; }
 .countdown { position: fixed; z-index: 8; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.5); opacity: 0; font: 130px 'Archivo Black'; color: #ffd447; -webkit-text-stroke: 5px #263b55; text-shadow: 0 10px 0 #263b55; transition: .15s; }
 .countdown.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 .controls { display: none; position: fixed; z-index: 7; inset: auto 18px 20px; justify-content: space-between; pointer-events: none; }
@@ -20,4 +26,4 @@
 .controls div { display: flex; gap: 8px; margin-left: auto; }
 
 @media (pointer: coarse) { .controls.active { display: flex; } .speed { bottom: 100px; } }
-@media (max-width: 700px) { .players { top: 80px; } .position, .lap { top: 82px; left: 18px; } .lap { left: 104px; } }
+@media (max-width: 700px) { .players { top: 80px; } .leaderboard { top: 165px; right: 18px; width: 165px; } .position, .lap { top: 82px; left: 18px; } .lap { left: 104px; } }

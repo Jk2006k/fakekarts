@@ -22,6 +22,7 @@ export class Game {
   private running = false
   private aiAngle = 0
   private lastSend = 0
+  private distanceTravelled = 0
 
   constructor(canvas: HTMLCanvasElement, name: () => string) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -40,7 +41,9 @@ export class Game {
     this.animate()
   }
 
-  async join(room: string) { return this.multiplayer.connect(room) }
+  async createRoom() { return this.multiplayer.createRoom() }
+
+  async joinRoom(room: string) { return this.multiplayer.joinRoom(room) }
 
   start() { this.running = true }
 
@@ -58,9 +61,12 @@ export class Game {
   }
 
   private update(dt: number) {
+    const previousX = this.state.x
+    const previousZ = this.state.z
     this.state = stepKart(this.state, this.controls, dt)
     containInArena(this.state)
     resolveObstacleCollisions(this.state, this.obstacles)
+    this.distanceTravelled += Math.hypot(this.state.x - previousX, this.state.z - previousZ)
     this.kart.position.set(this.state.x, .12 + rampHeightAt(this.state.x, this.state.z), this.state.z)
     this.kart.rotation.y = this.state.heading
 
@@ -74,9 +80,9 @@ export class Game {
     this.camera.lookAt(this.kart.position.x, 1.2, this.kart.position.z)
 
     this.lastSend += dt
-    if (this.lastSend > .08) { this.multiplayer.send(this.state); this.lastSend = 0 }
+    if (this.lastSend > .08) { this.multiplayer.send(this.state, Math.round(this.distanceTravelled)); this.lastSend = 0 }
     this.syncPeers()
-    updateHud(this.state.speed, this.multiplayer.peers.values())
+    updateHud(this.state.speed, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
   }
 
   private syncPeers() {

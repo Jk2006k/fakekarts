@@ -14,6 +14,11 @@ h1 em { color: #ffd447; font-style: normal; }
 .race-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b93739; }
 .race-button b { display: grid; place-items: center; background: #fff; color: #ff5a4f; width: 28px; height: 28px; border-radius: 5px; font-size: 25px; }
 .race-button:disabled { cursor: wait; opacity: .72; transform: none; }
+.room-actions { width: 280px; display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; align-items: end; }
+.room-actions .race-button { width: auto; padding-left: 14px; }
+.create-button { height: 56px; margin-top: 12px; border: 1px solid rgba(255,255,255,.35); border-radius: 8px; background: rgba(0,18,34,.55); color: #fff; cursor: pointer; font-size: 9px; letter-spacing: 1px; }
+.create-button:hover { border-color: #ffd447; }
+.create-button:disabled { cursor: wait; opacity: .6; }
 .hint { font-size: 9px; color: #98bad0; margin-top: 25px; }
 kbd { border: 1px solid #7290a3; padding: 3px 5px; border-radius: 3px; color: #dff5ff; }
 
