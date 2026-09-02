@@ -34,7 +34,7 @@
         <h1>FAKE<br /><em>KARTS</em></h1>
         <p class="tagline">Tiny wheels. Big feelings.</p>
         <label class="name-field">DRIVER NAME<input id="name" maxlength="12" value="Mohan" /></label>
-        <label class="name-field room-field">ROOM CODE<input id="room-code" maxlength="16" autocomplete="off" spellcheck="false" /></label>
+        <label class="name-field room-field">ROOM CODE<input id="room-code" maxlength="3" inputmode="numeric" pattern="[0-9]{3}" autocomplete="off" spellcheck="false" /></label>
         <div class="room-actions">
           <button id="create-room" class="create-button">CREATE ROOM</button>
           <button id="join-room" class="race-button"><span>JOIN ROOM</span><b>›</b></button>
@@ -45,7 +45,8 @@
 
       <section id="lobby" class="arena-lobby hidden" aria-label="Room lobby">
         <div class="lobby-card">
-          <p class="eyebrow">ROOM <strong id="lobby-room-code"></strong></p>
+          <p class="room-code-label">ROOM CODE</p>
+          <strong id="lobby-room-code" class="lobby-room-code"></strong>
           <h2>PLAYERS</h2>
           <div id="lobby-players" class="lobby-players"></div>
           <p id="room-status">WAITING FOR THE OWNER TO START…</p>

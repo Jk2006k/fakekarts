@@ -3,6 +3,7 @@ import './styles/menu.css'
 import './styles/hud.css'
 import './styles/settings.css'
 import { Game } from './game/Game'
+import { isRoomCode, normalizeRoomCode } from './game/roomCode'
 import { setupSettings } from './game/settings'
 
 const byId = <T extends HTMLElement>(id: string) => document.querySelector<T>(`#${id}`)!
@@ -16,7 +17,7 @@ const lobbyPlayers = byId('lobby-players')
 const roomStatus = byId('room-status')
 const presenceToast = byId('presence-toast')
 const joinError = byId('join-error')
-room.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase()
+room.value = normalizeRoomCode(new URLSearchParams(location.search).get('room') || '')
 const settings = setupSettings()
 const game = new Game(byId<HTMLCanvasElement>('world'), () => name.value.trim() || 'Rookie', settings)
 
@@ -97,9 +98,10 @@ startButton.addEventListener('click', () => {
 })
 
 joinButton.addEventListener('click', () => {
-  const roomCode = room.value.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 16)
-  if (!roomCode) {
-    joinError.textContent = 'Enter a room code.'
+  const roomCode = normalizeRoomCode(room.value)
+  room.value = roomCode
+  if (!isRoomCode(roomCode)) {
+    joinError.textContent = 'Enter a 3-digit room code.'
     room.focus()
     return undefined
   }
@@ -110,6 +112,8 @@ joinButton.addEventListener('click', () => {
 room.addEventListener('keydown', event => {
   if (event.key === 'Enter') joinButton.click()
 })
+
+room.addEventListener('input', () => { room.value = normalizeRoomCode(room.value) })
 
 byId('sound').addEventListener('click', event => {
   const button = event.currentTarget as HTMLButtonElement
