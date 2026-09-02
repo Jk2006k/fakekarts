@@ -40,12 +40,13 @@
           <button id="start-room" class="race-button hidden"><span>START RACE</span><b>›</b></button>
         </div>
         <p id="join-error" class="join-error" role="alert"></p>
-        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · share the room code with friends</p>
+        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · <kbd>SPACE</kbd> to drift</p>
       </section>
 
       <div id="countdown" class="countdown" aria-live="assertive"></div>
       <div class="controls" aria-label="Touch controls">
         <button data-key="left" aria-label="Turn left">←</button>
+        <button class="drift-control" data-key="drift" aria-label="Drift">DRIFT</button>
         <div><button data-key="forward" aria-label="Accelerate">↑</button><button data-key="back" aria-label="Brake">↓</button></div>
         <button data-key="right" aria-label="Turn right">→</button>
       </div>

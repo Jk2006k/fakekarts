@@ -23,6 +23,7 @@
 .countdown.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 .controls { display: none; position: fixed; z-index: 7; inset: auto 18px 20px; justify-content: space-between; pointer-events: none; }
 .controls button { pointer-events: auto; width: 62px; height: 62px; border: 1px solid rgba(255,255,255,.4); border-radius: 15px; color: #fff; background: rgba(10,25,40,.5); font-size: 24px; backdrop-filter: blur(8px); }
+.controls .drift-control { width: 76px; margin-left: 8px; color: #26324a; background: #ffd447; border-color: #fff0a8; font-size: 11px; font-weight: 900; }
 .controls div { display: flex; gap: 8px; margin-left: auto; }
 
 @media (pointer: coarse) { .controls.active { display: flex; } .speed { bottom: 100px; } }

@@ -22,7 +22,7 @@ export class Game {
   private multiplayer: Multiplayer
   private obstacles: Obstacle[]
   private state: KartState = { x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0 }
-  private controls: Controls = { forward: false, back: false, left: false, right: false }
+  private controls: Controls = { forward: false, back: false, left: false, right: false, drift: false }
   private clock = new THREE.Clock()
   private running = false
   private aiAngle = 0
@@ -90,6 +90,7 @@ export class Game {
 
     this.chaseCamera.update(this.state, dt)
     this.effects.exhaust(this.state, dt)
+    this.effects.drift(this.state, dt)
     this.effects.update(dt)
 
     this.lastSend += dt
