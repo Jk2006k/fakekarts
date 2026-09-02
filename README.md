@@ -1,6 +1,6 @@
 # FakeKarts
 
-A tiny browser-based 3D toon kart racer. Drive with WASD or the arrow keys; open a second tab to join the same local room.
+A tiny browser-based 3D toon kart arena. Drive with WASD or the arrow keys; open a second tab to join the same local room.
 
 ```sh
 npm install
