@@ -1,15 +1,12 @@
-import { DataConnection, Peer as PeerClient } from 'peerjs'
+import mqtt, { type MqttClient } from 'mqtt'
 import type { KartState } from './physics'
 
 export type Peer = KartState & { id: string; name: string; score: number; seen: number }
 
-type PlayerState = Omit<Peer, 'seen'>
 type RoomMessage =
-  | { type: 'snapshot'; players: PlayerState[] }
-  | { type: 'state'; player: PlayerState }
+  | { type: 'state'; player: Omit<Peer, 'seen'> }
   | { type: 'left'; id: string }
 
-const roomPeerId = (room: string) => `fakekarts-${room.toLowerCase()}`
 const generateRoomCode = () => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   const bytes = crypto.getRandomValues(new Uint8Array(6))
@@ -20,115 +17,74 @@ export class Multiplayer {
   readonly peers = new Map<string, Peer>()
   readonly id = crypto.randomUUID()
   room = ''
-  private peer?: PeerClient
-  private hostConnection?: DataConnection
-  private guests = new Map<string, DataConnection>()
-  private isHost = false
-  private localState: PlayerState
+  private client?: MqttClient
+  private topic = ''
 
-  constructor(private name: () => string) {
-    this.localState = { id: this.id, name: this.name(), x: 0, z: 12, heading: 0, speed: 0, score: 0 }
-  }
+  constructor(private name: () => string) {}
 
-  createRoom(): Promise<string> {
-    this.disconnect()
+  async createRoom() {
     const room = generateRoomCode()
-    this.room = room
-    this.isHost = true
-    const peer = new PeerClient(roomPeerId(room))
-    this.peer = peer
-    peer.on('connection', connection => this.acceptGuest(connection))
-
-    return new Promise((resolve, reject) => {
-      const timer = window.setTimeout(() => {
-        peer.destroy()
-        reject(new Error('Could not create a room. Check your connection.'))
-      }, 10000)
-      peer.on('open', () => { clearTimeout(timer); resolve(room) })
-      peer.on('error', error => {
-        clearTimeout(timer)
-        reject(new Error(error.type === 'unavailable-id' ? 'That room code is already in use. Please try again.' : 'Could not create a room. Check your connection.'))
-      })
-    })
+    return this.connect(room)
   }
 
-  joinRoom(room: string): Promise<string> {
+  async joinRoom(room: string) {
+    return this.connect(room)
+  }
+
+  private async connect(room: string) {
     this.disconnect()
     this.room = room
-    const peer = new PeerClient()
-    this.peer = peer
-
-    return new Promise((resolve, reject) => {
-      const timer = window.setTimeout(() => {
-        peer.destroy()
-        reject(new Error('Room not found or the host is offline.'))
-      }, 10000)
-      peer.on('open', () => {
-        const connection = peer.connect(roomPeerId(room), { metadata: { id: this.id, name: this.name() }, reliable: false })
-        this.hostConnection = connection
-        connection.on('data', data => this.receive(data as RoomMessage))
-        connection.on('open', () => { clearTimeout(timer); resolve(room) })
-        connection.on('error', () => { clearTimeout(timer); reject(new Error('Could not join the room.')) })
+    this.topic = `fakekarts/v3/${room}`
+    const left = JSON.stringify({ type: 'left', id: this.id } satisfies RoomMessage)
+    try {
+      const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: `fakekarts_${this.id.replaceAll('-', '')}`,
+        clean: true,
+        connectTimeout: 8000,
+        reconnectPeriod: 2000,
+        will: { topic: this.topic, payload: left, qos: 0, retain: false },
       })
-      peer.on('error', error => {
-        clearTimeout(timer)
-        reject(new Error(error.type === 'peer-unavailable' ? 'Room not found or the host is offline.' : 'Could not connect to the room.'))
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), 10000)
+        client.once('connect', () => { clearTimeout(timer); resolve() })
+        client.once('error', error => { clearTimeout(timer); reject(error) })
       })
-    })
+      this.client = client
+      client.on('message', (_topic, payload) => {
+        try { this.receive(JSON.parse(payload.toString()) as RoomMessage) } catch { /* Ignore unrelated public-broker traffic. */ }
+      })
+      await client.subscribeAsync(this.topic, { qos: 0 })
+      return room
+    } catch {
+      this.disconnect()
+      throw new Error('Could not connect to multiplayer. Please check your internet connection.')
+    }
   }
 
   send(state: KartState, score: number) {
-    this.localState = { ...state, id: this.id, name: this.name(), score }
-    const message: RoomMessage = { type: 'state', player: this.localState }
-    if (this.isHost) this.broadcast(message)
-    else if (this.hostConnection?.open) this.hostConnection.send(message)
+    if (!this.client?.connected) return
+    const message: RoomMessage = { type: 'state', player: { ...state, id: this.id, name: this.name(), score } }
+    this.client.publish(this.topic, JSON.stringify(message), { qos: 0 })
+    const stale = performance.now() - 3000
+    for (const [id, player] of this.peers) if (player.seen < stale) this.peers.delete(id)
   }
 
   disconnect() {
-    this.peer?.destroy()
-    this.peer = undefined
-    this.hostConnection = undefined
-    this.guests.clear()
-    this.isHost = false
+    if (this.client) {
+      if (this.client.connected && this.topic) this.client.publish(this.topic, JSON.stringify({ type: 'left', id: this.id } satisfies RoomMessage))
+      this.client.end(true)
+    }
+    this.client = undefined
+    this.topic = ''
     this.room = ''
     this.peers.clear()
   }
 
-  private acceptGuest(connection: DataConnection) {
-    const id = String(connection.metadata?.id || connection.peer)
-    const name = String(connection.metadata?.name || 'Rookie').slice(0, 12)
-    connection.on('open', () => {
-      this.guests.set(id, connection)
-      const player: Peer = { id, name, x: 0, z: 12, heading: 0, speed: 0, score: 0, seen: performance.now() }
-      this.peers.set(id, player)
-      connection.send({ type: 'snapshot', players: [this.localState, ...this.peers.values()].filter(item => item.id !== id) } satisfies RoomMessage)
-      this.broadcast({ type: 'state', player }, connection)
-    })
-    connection.on('data', data => {
-      const message = data as RoomMessage
-      if (message.type !== 'state' || message.player.id !== id) return
-      this.peers.set(id, { ...message.player, name, seen: performance.now() })
-      this.broadcast(message, connection)
-    })
-    connection.on('close', () => {
-      this.guests.delete(id)
-      this.peers.delete(id)
-      this.broadcast({ type: 'left', id })
-    })
-  }
-
   private receive(message: RoomMessage) {
-    if (message.type === 'snapshot') {
-      this.peers.clear()
-      for (const player of message.players) if (player.id !== this.id) this.peers.set(player.id, { ...player, seen: performance.now() })
-    } else if (message.type === 'state' && message.player.id !== this.id) {
+    if (message.type === 'state' && message.player.id !== this.id) {
       this.peers.set(message.player.id, { ...message.player, seen: performance.now() })
     } else if (message.type === 'left') {
       this.peers.delete(message.id)
     }
-  }
-
-  private broadcast(message: RoomMessage, except?: DataConnection) {
-    for (const connection of this.guests.values()) if (connection !== except && connection.open) connection.send(message)
   }
 }
