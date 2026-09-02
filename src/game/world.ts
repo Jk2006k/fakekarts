@@ -1,68 +1,57 @@
 import * as THREE from 'three'
 
 const toon = (color: THREE.ColorRepresentation) => new THREE.MeshToonMaterial({ color })
+const mesh = (geometry: THREE.BufferGeometry, material: THREE.Material, x = 0, y = 0, z = 0) => {
+  const item = new THREE.Mesh(geometry, material)
+  item.position.set(x, y, z)
+  item.castShadow = item.receiveShadow = true
+  return item
+}
 
 export function createWorld(scene: THREE.Scene) {
-  scene.background = new THREE.Color('#88d8ff')
-  scene.fog = new THREE.Fog('#88d8ff', 85, 185)
+  scene.background = new THREE.Color('#8bd8ff')
+  scene.fog = new THREE.Fog('#8bd8ff', 105, 210)
 
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 64), toon('#78be55'))
-  ground.rotation.x = -Math.PI / 2
-  ground.receiveShadow = true
-  scene.add(ground)
+  const arena = mesh(new THREE.CircleGeometry(82, 96), toon('#c8b8e8'))
+  arena.rotation.x = -Math.PI / 2
+  scene.add(arena)
 
-  const track = new THREE.Mesh(new THREE.RingGeometry(38, 59, 96), toon('#485266'))
-  track.rotation.x = -Math.PI / 2
-  track.position.y = 0.04
-  track.receiveShadow = true
-  scene.add(track)
+  const inner = mesh(new THREE.CircleGeometry(76, 96), toon('#a99bd3'), 0, .025)
+  inner.rotation.x = -Math.PI / 2
+  scene.add(inner)
 
-  for (const radius of [39.3, 57.7]) {
-    const line = new THREE.Mesh(new THREE.RingGeometry(radius - .25, radius + .25, 96), toon('#fff3ce'))
-    line.rotation.x = -Math.PI / 2
-    line.position.y = .07
-    scene.add(line)
+  for (const radius of [13, 35, 58]) {
+    const marking = mesh(new THREE.RingGeometry(radius - .18, radius + .18, 96), toon('#dcd3f3'), 0, .05)
+    marking.rotation.x = -Math.PI / 2
+    scene.add(marking)
   }
 
-  const dashMaterial = toon('#ffd447')
-  for (let i = 0; i < 36; i++) {
-    const angle = i / 36 * Math.PI * 2
-    const dash = new THREE.Mesh(new THREE.BoxGeometry(.55, .08, 3.6), dashMaterial)
-    dash.position.set(Math.sin(angle) * 48.5, .1, Math.cos(angle) * 48.5)
-    dash.rotation.y = angle
-    scene.add(dash)
+  const center = mesh(new THREE.CircleGeometry(3.8, 24), toon('#ffd447'), 0, .06)
+  center.rotation.x = -Math.PI / 2
+  scene.add(center)
+
+  const wall = mesh(new THREE.TorusGeometry(79, 2.4, 8, 96), toon('#4b3f72'), 0, 1.3)
+  wall.rotation.x = Math.PI / 2
+  scene.add(wall)
+
+  const rail = mesh(new THREE.TorusGeometry(79, .42, 7, 96), toon('#ff695f'), 0, 3.8)
+  rail.rotation.x = Math.PI / 2
+  scene.add(rail)
+
+  const bannerColors = ['#ff695f', '#ffd447', '#39bde8', '#77dc75']
+  for (let i = 0; i < 16; i++) {
+    const angle = i / 16 * Math.PI * 2
+    const banner = mesh(new THREE.BoxGeometry(8, 2.3, .35), toon(bannerColors[i % bannerColors.length]))
+    banner.position.set(Math.sin(angle) * 79, 6, Math.cos(angle) * 79)
+    banner.rotation.y = angle
+    scene.add(banner)
   }
 
-  const trunk = toon('#744d35')
-  const leaves = [toon('#1c8b57'), toon('#2ca768'), toon('#16744a')]
-  for (let i = 0; i < 42; i++) {
-    const angle = i * 2.4
-    const radius = i % 3 === 0 ? 72 + (i % 6) * 4 : 20 + (i % 5) * 2
-    const tree = new THREE.Group()
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(.45, .7, 4, 7), trunk)
-    stem.position.y = 2
-    const crown = new THREE.Mesh(new THREE.ConeGeometry(2.4 + i % 3 * .3, 6.5, 7), leaves[i % leaves.length])
-    crown.position.y = 6
-    tree.add(stem, crown)
-    tree.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius)
-    tree.rotation.y = angle
-    scene.add(tree)
-  }
-
-  const mountainMaterial = toon('#66a870')
-  for (let i = 0; i < 13; i++) {
-    const mountain = new THREE.Mesh(new THREE.ConeGeometry(15 + i % 3 * 5, 20 + i % 4 * 6, 7), mountainMaterial)
-    const angle = i / 13 * Math.PI * 2
-    mountain.position.set(Math.sin(angle) * 125, 7, Math.cos(angle) * 125)
-    mountain.rotation.y = angle
-    scene.add(mountain)
-  }
-
-  scene.add(new THREE.HemisphereLight('#dff6ff', '#43833f', 2.7))
-  const sun = new THREE.DirectionalLight('#fff4ca', 4)
-  sun.position.set(-35, 55, -25)
+  scene.add(new THREE.HemisphereLight('#eaf9ff', '#55496c', 2.8))
+  const sun = new THREE.DirectionalLight('#fff3cb', 4.5)
+  sun.position.set(-40, 62, -28)
   sun.castShadow = true
-  sun.shadow.mapSize.set(1024, 1024)
+  sun.shadow.mapSize.set(2048, 2048)
   sun.shadow.camera.left = sun.shadow.camera.bottom = -90
   sun.shadow.camera.right = sun.shadow.camera.top = 90
   scene.add(sun)
@@ -70,21 +59,45 @@ export function createWorld(scene: THREE.Scene) {
 
 export function createKart(color: THREE.ColorRepresentation) {
   const kart = new THREE.Group()
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.25, .65, 3.6), toon(color))
-  body.position.y = .85
-  body.castShadow = true
-  const nose = new THREE.Mesh(new THREE.BoxGeometry(1.8, .45, 1.1), toon('#ffe052'))
-  nose.position.set(0, .7, 2)
-  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 1), toon('#263143'))
-  seat.position.set(0, 1.45, -.35)
-  const wheelMaterial = toon('#202735')
-  kart.add(body, nose, seat)
-  for (const x of [-1.25, 1.25]) for (const z of [-1.1, 1.15]) {
-    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(.55, .55, .45, 10), wheelMaterial)
+  const paint = toon(color)
+  const dark = toon('#202638')
+  const metal = toon('#9aa7b8')
+  const yellow = toon('#ffd447')
+
+  const chassis = mesh(new THREE.BoxGeometry(2.9, .42, 4.15), dark, 0, .62)
+  const body = mesh(new THREE.CapsuleGeometry(.95, 2.15, 4, 10), paint, 0, 1.05)
+  body.rotation.x = Math.PI / 2
+  const nose = mesh(new THREE.BoxGeometry(2.25, .58, 1.25), paint, 0, .9, 2.05)
+  nose.rotation.x = -.12
+  const frontBumper = mesh(new THREE.BoxGeometry(3.3, .25, .35), yellow, 0, .57, 2.58)
+  const rearBumper = mesh(new THREE.BoxGeometry(3.2, .24, .3), metal, 0, .62, -2.3)
+  const seat = mesh(new THREE.BoxGeometry(1.3, 1.35, .65), dark, 0, 1.55, -.55)
+  seat.rotation.x = -.18
+
+  const driver = mesh(new THREE.SphereGeometry(.62, 12, 8), toon('#f2ae75'), 0, 2.35, -.15)
+  const helmet = mesh(new THREE.SphereGeometry(.72, 12, 8, 0, Math.PI * 2, 0, Math.PI * .58), paint, 0, 2.46, -.15)
+  const visor = mesh(new THREE.BoxGeometry(1.03, .34, .12), toon('#263f61'), 0, 2.38, .48)
+  visor.rotation.x = -.15
+
+  const steering = mesh(new THREE.TorusGeometry(.4, .08, 6, 12), dark, 0, 1.55, .65)
+  steering.rotation.x = Math.PI / 2
+  steering.rotation.z = -.18
+
+  kart.add(chassis, body, nose, frontBumper, rearBumper, seat, driver, helmet, visor, steering)
+
+  for (const x of [-1.55, 1.55]) for (const z of [-1.35, 1.35]) {
+    const wheel = mesh(new THREE.CylinderGeometry(.66, .66, .52, 12), dark, x, .65, z)
     wheel.rotation.z = Math.PI / 2
-    wheel.position.set(x, .55, z)
-    wheel.castShadow = true
-    kart.add(wheel)
+    const hub = mesh(new THREE.CylinderGeometry(.25, .25, .56, 12), yellow, x, .65, z)
+    hub.rotation.z = Math.PI / 2
+    kart.add(wheel, hub)
+  }
+
+  for (const x of [-.7, .7]) {
+    kart.add(mesh(new THREE.SphereGeometry(.19, 8, 6), toon('#fff6c8'), x, 1.08, 2.66))
+    const exhaust = mesh(new THREE.CylinderGeometry(.1, .14, .75, 8), metal, x, .65, -2.4)
+    exhaust.rotation.x = Math.PI / 2
+    kart.add(exhaust)
   }
   return kart
 }
