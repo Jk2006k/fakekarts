@@ -4,6 +4,7 @@ import { ChaseCamera } from './camera'
 import { Effects } from './effects'
 import { updateHud } from './hud'
 import { bindControls } from './input'
+import { shortestTurn, smoothingFactor } from './interpolation'
 import { createKart } from './kart'
 import { Multiplayer } from './multiplayer'
 import { createObstacles, rampHeightAt, rampPitchAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
@@ -49,6 +50,10 @@ export class Game {
 
   async joinRoom(room: string) { return this.multiplayer.joinRoom(room) }
 
+  onRaceStart(handler: (startAt: number) => void) { this.multiplayer.onRaceStart(handler) }
+
+  startRoomRace() { this.multiplayer.startRace() }
+
   start() { this.running = true }
 
   private resize() {
@@ -89,16 +94,27 @@ export class Game {
 
     this.lastSend += dt
     if (this.lastSend > .08) { this.multiplayer.send(this.state, Math.round(this.distanceTravelled)); this.lastSend = 0 }
-    this.syncPeers()
+    this.syncPeers(dt)
     updateHud(this.state.speed, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
   }
 
-  private syncPeers() {
+  private syncPeers(dt: number) {
+    const smoothing = smoothingFactor(dt)
     for (const [id, peer] of this.multiplayer.peers) {
       let kart = this.remotes.get(id)
-      if (!kart) { kart = createKart('#a879ff'); this.remotes.set(id, kart); this.scene.add(kart) }
-      kart.position.set(peer.x, .12 + (peer.y ?? 0), peer.z)
-      kart.rotation.y = peer.heading
+      if (!kart) {
+        kart = createKart('#a879ff')
+        kart.position.set(peer.x, .12 + (peer.y ?? 0), peer.z)
+        kart.rotation.y = peer.heading
+        this.remotes.set(id, kart)
+        this.scene.add(kart)
+      } else {
+        kart.position.x += (peer.x - kart.position.x) * smoothing
+        kart.position.z += (peer.z - kart.position.z) * smoothing
+        kart.position.y += (.12 + (peer.y ?? 0) - kart.position.y) * smoothing
+        const turn = shortestTurn(kart.rotation.y, peer.heading)
+        kart.rotation.y += turn * smoothing
+      }
     }
     for (const [id, kart] of this.remotes) if (!this.multiplayer.peers.has(id)) { this.scene.remove(kart); this.remotes.delete(id) }
   }

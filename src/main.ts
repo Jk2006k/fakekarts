@@ -8,11 +8,36 @@ const name = byId<HTMLInputElement>('name')
 const room = byId<HTMLInputElement>('room-code')
 const joinButton = byId<HTMLButtonElement>('join-room')
 const createButton = byId<HTMLButtonElement>('create-room')
+const startButton = byId<HTMLButtonElement>('start-room')
+const lobby = byId('lobby')
+const roomStatus = byId('room-status')
 const joinError = byId('join-error')
 room.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase()
 const game = new Game(byId<HTMLCanvasElement>('world'), () => name.value.trim() || 'Rookie')
 
-const enterGame = async (action: () => Promise<string>) => {
+let countdownRunning = false
+
+const runCountdown = async (startAt: number) => {
+  if (countdownRunning) return
+  countdownRunning = true
+  await new Promise(resolve => setTimeout(resolve, Math.max(0, startAt - Date.now())))
+  byId('menu').classList.add('leaving')
+  const countdown = byId('countdown')
+  for (const word of ['3', '2', '1', 'GO!']) {
+    countdown.textContent = word
+    countdown.classList.add('show')
+    await new Promise(resolve => setTimeout(resolve, word === 'GO!' ? 650 : 700))
+    countdown.classList.remove('show')
+  }
+  byId('menu').classList.add('hidden')
+  byId('hud').classList.remove('hidden')
+  document.querySelector('.controls')!.classList.add('active')
+  game.start()
+}
+
+game.onRaceStart(runCountdown)
+
+const enterLobby = async (action: () => Promise<string>, isOwner: boolean) => {
   createButton.disabled = true
   joinButton.disabled = true
   joinError.textContent = ''
@@ -28,22 +53,19 @@ const enterGame = async (action: () => Promise<string>) => {
     joinButton.querySelector('span')!.textContent = 'JOIN ROOM'
     return
   }
-
-  byId('menu').classList.add('leaving')
-  const countdown = byId('countdown')
-  for (const word of ['3', '2', '1', 'GO!']) {
-    countdown.textContent = word
-    countdown.classList.add('show')
-    await new Promise(resolve => setTimeout(resolve, word === 'GO!' ? 650 : 700))
-    countdown.classList.remove('show')
-  }
-  byId('menu').classList.add('hidden')
-  byId('hud').classList.remove('hidden')
-  document.querySelector('.controls')!.classList.add('active')
-  game.start()
+  document.querySelector('.room-actions')!.classList.add('hidden')
+  lobby.classList.remove('hidden')
+  roomStatus.textContent = isOwner ? 'ROOM READY — SHARE THE CODE, THEN START' : 'WAITING FOR THE OWNER TO START…'
+  if (isOwner) startButton.classList.remove('hidden')
 }
 
-createButton.addEventListener('click', () => enterGame(() => game.createRoom()))
+createButton.addEventListener('click', () => enterLobby(() => game.createRoom(), true))
+
+startButton.addEventListener('click', () => {
+  startButton.disabled = true
+  roomStatus.textContent = 'STARTING FOR EVERYONE…'
+  game.startRoomRace()
+})
 
 joinButton.addEventListener('click', () => {
   const roomCode = room.value.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 16)
@@ -53,7 +75,7 @@ joinButton.addEventListener('click', () => {
     return undefined
   }
   joinButton.querySelector('span')!.textContent = 'JOINING…'
-  return enterGame(() => game.joinRoom(roomCode))
+  return enterLobby(() => game.joinRoom(roomCode), false)
 })
 
 room.addEventListener('keydown', event => {

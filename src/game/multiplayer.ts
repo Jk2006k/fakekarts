@@ -6,6 +6,7 @@ export type Peer = KartState & { id: string; name: string; score: number; seen: 
 type RoomMessage =
   | { type: 'state'; player: Omit<Peer, 'seen'> }
   | { type: 'left'; id: string }
+  | { type: 'start'; startAt: number }
 
 const generateRoomCode = () => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -19,6 +20,7 @@ export class Multiplayer {
   room = ''
   private client?: MqttClient
   private topic = ''
+  private startHandler: (startAt: number) => void = () => {}
 
   constructor(private name: () => string) {}
 
@@ -29,6 +31,16 @@ export class Multiplayer {
 
   async joinRoom(room: string) {
     return this.connect(room)
+  }
+
+  onRaceStart(handler: (startAt: number) => void) {
+    this.startHandler = handler
+  }
+
+  startRace() {
+    if (!this.client?.connected) return
+    const message: RoomMessage = { type: 'start', startAt: Date.now() + 700 }
+    this.client.publish(this.topic, JSON.stringify(message), { qos: 1, retain: true })
   }
 
   private async connect(room: string) {
@@ -85,6 +97,8 @@ export class Multiplayer {
       this.peers.set(message.player.id, { ...message.player, seen: performance.now() })
     } else if (message.type === 'left') {
       this.peers.delete(message.id)
+    } else if (message.type === 'start' && Number.isFinite(message.startAt)) {
+      this.startHandler(message.startAt)
     }
   }
 }
