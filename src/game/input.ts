@@ -1,7 +1,7 @@
 import type { Controls } from './physics'
 
 export function bindControls(controls: Controls) {
-  const keys: Record<string, keyof Controls> = { KeyW: 'forward', ArrowUp: 'forward', KeyS: 'back', ArrowDown: 'back', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'drift' }
+  const keys: Record<string, keyof Controls> = { KeyW: 'forward', ArrowUp: 'forward', KeyS: 'back', ArrowDown: 'back', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'drift', KeyF: 'fire' }
   for (const event of ['keydown', 'keyup'] as const) addEventListener(event, e => {
     const control = keys[e.code]
     if (control) { e.preventDefault(); controls[control] = event === 'keydown' }
@@ -13,4 +13,6 @@ export function bindControls(controls: Controls) {
       controls[control] = event === 'pointerdown'
     })
   })
+  document.querySelector('#world')!.addEventListener('pointerdown', event => { if ((event as PointerEvent).pointerType === 'mouse') controls.fire = true })
+  addEventListener('pointerup', () => { controls.fire = false })
 }

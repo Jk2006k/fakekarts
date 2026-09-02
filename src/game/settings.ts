@@ -15,15 +15,15 @@ export function setupSettings() {
   const fields = Object.keys(defaults) as Array<keyof GameSettings>
 
   const render = () => fields.forEach(key => {
-    const input = document.querySelector<HTMLInputElement>(`#setting-${key}`)!
-    const value = Number(settings[key])
-    settings[key] = Number.isFinite(value) ? Math.max(Number(input.min), Math.min(Number(input.max), value)) : defaults[key]
-    input.value = String(settings[key])
-    document.querySelector(`#setting-${key}-value`)!.textContent = settings[key].toFixed(key.includes('camera') ? 1 : 2)
+    const select = document.querySelector<HTMLSelectElement>(`#setting-${key}`)!
+    const options = [...select.options].map(option => Number(option.value))
+    const value = Number.isFinite(Number(settings[key])) ? Number(settings[key]) : defaults[key]
+    settings[key] = options.reduce((closest, option) => Math.abs(option - value) < Math.abs(closest - value) ? option : closest)
+    select.value = String(settings[key])
   })
 
-  for (const key of fields) document.querySelector(`#setting-${key}`)!.addEventListener('input', event => {
-    settings[key] = Number((event.currentTarget as HTMLInputElement).value)
+  for (const key of fields) document.querySelector(`#setting-${key}`)!.addEventListener('change', event => {
+    settings[key] = Number((event.currentTarget as HTMLSelectElement).value)
     render()
     try { localStorage.setItem('fakekarts-settings', JSON.stringify(settings)) } catch { /* Settings still apply for this session. */ }
   })
