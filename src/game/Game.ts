@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { containInArena, createArena } from './arena'
 import { ChaseCamera } from './camera'
+import { MAX_HEALTH, respawn, resolveKartCollision, takeDamage } from './combat'
 import { Effects } from './effects'
 import { updateHud } from './hud'
 import { bindControls } from './input'
@@ -10,7 +11,7 @@ import { Multiplayer, type Peer } from './multiplayer'
 import { createObstacles, rampHeightAt, rampPitchAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
 import { stepGravity, stepKart, type Controls, type KartState } from './physics'
 import type { GameSettings } from './settings'
-import { WeaponSystem } from './weapon'
+import { WeaponSystem, type WeaponTarget } from './weapon'
 
 export class Game {
   private scene = new THREE.Scene()
@@ -24,7 +25,7 @@ export class Game {
   private remotes = new Map<string, THREE.Group>()
   private multiplayer: Multiplayer
   private obstacles: Obstacle[]
-  private state: KartState = { x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0 }
+  private state: KartState = { x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0, health: MAX_HEALTH }
   private controls: Controls = { forward: false, back: false, left: false, right: false, drift: false, fire: false }
   private clock = new THREE.Clock()
   private running = false
@@ -32,6 +33,8 @@ export class Game {
   private lastSend = 0
   private distanceTravelled = 0
   private groundHeight = 0
+  private botHealth = MAX_HEALTH
+  private collisionCooldowns = new Map<string, number>()
 
   constructor(canvas: HTMLCanvasElement, name: () => string, private settings: GameSettings) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -43,6 +46,7 @@ export class Game {
     this.scene.add(this.kart, this.rival)
     this.chaseCamera.snap(this.state)
     this.multiplayer = new Multiplayer(name)
+    this.multiplayer.onDamage(damage => this.damagePlayer(damage))
     bindControls(this.controls)
     addEventListener('resize', () => this.resize())
     this.resize()
@@ -79,6 +83,10 @@ export class Game {
   }
 
   private update(dt: number) {
+    for (const [id, cooldown] of this.collisionCooldowns) {
+      if (cooldown <= dt) this.collisionCooldowns.delete(id)
+      else this.collisionCooldowns.set(id, cooldown - dt)
+    }
     const previousX = this.state.x
     const previousZ = this.state.z
     this.state = stepKart(this.state, this.controls, dt, this.settings)
@@ -88,26 +96,78 @@ export class Game {
     stepGravity(this.state, groundHeight, this.groundHeight, dt)
     this.groundHeight = groundHeight
     this.distanceTravelled += Math.hypot(this.state.x - previousX, this.state.z - previousZ)
+    this.aiAngle += dt * .45
+    this.rival.position.set(Math.sin(this.aiAngle) * 28, .12, Math.cos(this.aiAngle) * 28)
+    this.rival.rotation.y = this.aiAngle + Math.PI / 2
+    this.collideWithOpponents()
+
     this.kart.position.set(this.state.x, .12 + (this.state.y ?? 0), this.state.z)
     this.kart.rotation.y = this.state.heading
     this.kart.rotation.z = THREE.MathUtils.lerp(this.kart.rotation.z, -(this.state.drift ?? 0) * .12, 1 - Math.exp(-9 * dt))
     const airbornePitch = -(this.state.verticalSpeed ?? 0) * .035
     this.kart.rotation.x = THREE.MathUtils.lerp(this.kart.rotation.x, groundHeight ? rampPitchAt(this.state.x, this.state.z, this.state.heading) : airbornePitch, 1 - Math.exp(-10 * dt))
 
-    this.aiAngle += dt * .45
-    this.rival.position.set(Math.sin(this.aiAngle) * 28, .12, Math.cos(this.aiAngle) * 28)
-    this.rival.rotation.y = this.aiAngle + Math.PI / 2
-
     this.chaseCamera.update(this.state, dt, this.settings)
     this.effects.exhaust(this.state, dt)
     this.effects.drift(this.state, dt)
-    this.weapon.update(this.state, this.obstacles, this.controls.fire, dt)
+    const targets: WeaponTarget[] = [{ id: 'bot', object: this.rival }, ...[...this.remotes].map(([id, object]) => ({ id, object }))]
+    this.weapon.update(this.state, this.obstacles, targets, this.controls.fire, dt, (id, damage) => this.damageOpponent(id, damage))
     this.effects.update(dt)
 
     this.lastSend += dt
     if (this.lastSend > .08) { this.multiplayer.send(this.state, Math.round(this.distanceTravelled)); this.lastSend = 0 }
     this.syncPeers(dt)
-    updateHud(this.state.speed, this.state.drift ?? 0, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
+    updateHud(this.state.speed, this.state.drift ?? 0, this.state.health ?? MAX_HEALTH, this.botHealth, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
+  }
+
+  private collideWithOpponents() {
+    const botDamage = this.collisionCooldowns.has('bot') ? 0 : resolveKartCollision(this.state, {
+      x: this.rival.position.x, y: 0, z: this.rival.position.z, heading: this.rival.rotation.y, speed: 12.6,
+    })
+    if (botDamage) {
+      this.collisionCooldowns.set('bot', .7)
+      this.damagePlayer(botDamage)
+      this.damageBot(botDamage)
+    }
+    for (const [id, peer] of this.multiplayer.peers) {
+      const damage = this.collisionCooldowns.has(id) ? 0 : resolveKartCollision(this.state, peer)
+      if (!damage) continue
+      this.collisionCooldowns.set(id, .7)
+      if (this.multiplayer.id < id) {
+        this.damagePlayer(damage)
+        this.multiplayer.hitOpponent(id, damage)
+      }
+    }
+  }
+
+  private damageOpponent(id: string, damage: number) {
+    if (id === 'bot') this.damageBot(damage)
+    else this.multiplayer.hitOpponent(id, damage)
+  }
+
+  private damagePlayer(damage: number) {
+    const destroyed = takeDamage(this.state, damage)
+    this.effects.combatBurst(this.kart.position.clone().add(new THREE.Vector3(0, 1, 0)), destroyed)
+    const flash = document.querySelector('#damage-flash')!
+    flash.classList.remove('active')
+    requestAnimationFrame(() => flash.classList.add('active'))
+    window.setTimeout(() => flash.classList.remove('active'), 130)
+    if (destroyed) {
+      respawn(this.state)
+      this.groundHeight = 0
+      this.chaseCamera.snap(this.state)
+    }
+  }
+
+  private damageBot(damage: number) {
+    const health = { health: this.botHealth }
+    const destroyed = takeDamage(health, damage)
+    this.botHealth = health.health ?? MAX_HEALTH
+    this.effects.combatBurst(this.rival.position.clone().add(new THREE.Vector3(0, 1, 0)), destroyed)
+    if (destroyed) {
+      this.botHealth = MAX_HEALTH
+      this.aiAngle += Math.PI
+    }
   }
 
   private syncPeers(dt: number) {

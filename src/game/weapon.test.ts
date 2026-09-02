@@ -17,6 +17,19 @@ test('mounted pistol fires a live projectile', () => {
   const kart = new THREE.Group()
   scene.add(kart)
   const weapon = new WeaponSystem(scene, kart, new Effects(scene))
-  weapon.update({ x: 0, y: 0, z: 0, heading: 0, speed: 10 }, [], true, 1 / 60)
+  weapon.update({ x: 0, y: 0, z: 0, heading: 0, speed: 10 }, [], [], true, 1 / 60, () => {})
   assert.equal(weapon.bulletCount, 1)
+})
+
+test('mounted pistol damages an opponent in its firing path', () => {
+  const scene = new THREE.Scene()
+  const kart = new THREE.Group()
+  const target = new THREE.Group()
+  target.position.set(0, 0, 5)
+  scene.add(kart, target)
+  const weapon = new WeaponSystem(scene, kart, new Effects(scene))
+  let damage = 0
+  weapon.update({ x: 0, y: 0, z: 0, heading: 0, speed: 10 }, [], [{ id: 'opponent', object: target }], true, 1 / 60, (_id, amount) => { damage = amount })
+  assert.equal(damage, 25)
+  assert.equal(weapon.bulletCount, 0)
 })
