@@ -46,6 +46,19 @@ export class Effects {
     )
   }
 
+  bulletImpact(position: THREE.Vector3) {
+    for (let i = 0; i < 9; i++) this.spawn(
+      position.clone(),
+      new THREE.Vector3((Math.random() - .5) * 7, 2 + Math.random() * 5, (Math.random() - .5) * 7),
+      false,
+      '#ffd447',
+    )
+  }
+
+  muzzleSmoke(position: THREE.Vector3, direction: THREE.Vector3) {
+    for (let i = 0; i < 3; i++) this.spawn(position.clone(), direction.clone().multiplyScalar(2 + Math.random() * 2).add(new THREE.Vector3(0, .7, 0)), true)
+  }
+
   update(dt: number) {
     for (const particle of this.particles) {
       particle.life -= dt
@@ -67,10 +80,10 @@ export class Effects {
     }
   }
 
-  private spawn(position: THREE.Vector3, velocity: THREE.Vector3, smoke: boolean) {
+  private spawn(position: THREE.Vector3, velocity: THREE.Vector3, smoke: boolean, color = '#c8793d') {
     const material = smoke
       ? new THREE.MeshBasicMaterial({ color: '#d9dde2', transparent: true, opacity: .55, depthWrite: false })
-      : new THREE.MeshToonMaterial({ color: '#c8793d' })
+      : new THREE.MeshToonMaterial({ color })
     const particle = new THREE.Mesh(smoke ? this.smokeGeometry : this.debrisGeometry, material)
     particle.position.copy(position)
     particle.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3)

@@ -25,6 +25,8 @@
         <div class="lap"><small>MODE</small><b>FREE RIDE</b></div>
         <div class="speed"><strong id="speed">0</strong><span>KM/H</span><div><i id="speedbar"></i></div></div>
         <div id="drift-status" class="drift-status">DRIFTING</div>
+        <div class="weapon-hud"><small>WEAPON</small><b>PISTOL</b><span>∞</span></div>
+        <div class="crosshair" aria-hidden="true">+</div>
         <div class="players" id="players"></div>
         <div class="leaderboard" id="leaderboard"></div>
       </section>
@@ -40,7 +42,7 @@
           <button id="join-room" class="race-button"><span>JOIN ROOM</span><b>›</b></button>
         </div>
         <p id="join-error" class="join-error" role="alert"></p>
-        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · <kbd>SPACE</kbd> to drift</p>
+        <p class="hint"><kbd>WASD</kbd> drive · <kbd>SPACE</kbd> drift · <kbd>F</kbd> or click to fire</p>
       </section>
 
       <section id="lobby" class="arena-lobby hidden" aria-label="Room lobby">
@@ -58,16 +60,17 @@
       <div class="controls" aria-label="Touch controls">
         <button data-key="left" aria-label="Turn left">←</button>
         <button class="drift-control" data-key="drift" aria-label="Drift">DRIFT</button>
+        <button class="fire-control" data-key="fire" aria-label="Fire pistol">FIRE</button>
         <div><button data-key="forward" aria-label="Accelerate">↑</button><button data-key="back" aria-label="Brake">↓</button></div>
         <button data-key="right" aria-label="Turn right">→</button>
       </div>
       <dialog id="settings-panel" class="settings-panel">
         <form method="dialog">
           <header><h2>GAME SETTINGS</h2><button aria-label="Close settings">×</button></header>
-          <label class="setting">CAMERA DISTANCE <output id="setting-cameraDistance-value"></output><input id="setting-cameraDistance" type="range" min="8" max="20" step="0.5" /></label>
-          <label class="setting">CAMERA HEIGHT <output id="setting-cameraHeight-value"></output><input id="setting-cameraHeight" type="range" min="4" max="12" step="0.5" /></label>
-          <label class="setting">STEERING SENSITIVITY <output id="setting-steeringSensitivity-value"></output><input id="setting-steeringSensitivity" type="range" min="0.6" max="1.8" step="0.05" /></label>
-          <label class="setting">DRIFT STRENGTH <output id="setting-driftStrength-value"></output><input id="setting-driftStrength" type="range" min="0.7" max="1.8" step="0.05" /></label>
+          <label class="setting">CAMERA DISTANCE<select id="setting-cameraDistance"><option value="8">LOW</option><option value="12">MEDIUM</option><option value="16">HIGH</option><option value="20">XHIGH</option></select></label>
+          <label class="setting">CAMERA HEIGHT<select id="setting-cameraHeight"><option value="4">LOW</option><option value="6.5">MEDIUM</option><option value="9">HIGH</option><option value="12">XHIGH</option></select></label>
+          <label class="setting">STEERING SENSITIVITY<select id="setting-steeringSensitivity"><option value="0.7">LOW</option><option value="1">MEDIUM</option><option value="1.35">HIGH</option><option value="1.7">XHIGH</option></select></label>
+          <label class="setting">DRIFT STRENGTH<select id="setting-driftStrength"><option value="0.8">LOW</option><option value="1.15">MEDIUM</option><option value="1.45">HIGH</option><option value="1.8">XHIGH</option></select></label>
           <button id="reset-settings" class="reset-settings">RESET DEFAULTS</button>
         </form>
       </dialog>

@@ -4,7 +4,7 @@ import { KPH_PER_UNIT, MAX_SPEED, stepGravity, stepKart, type KartState } from '
 
 test('kart accelerates, turns, and respects top speed', () => {
   let kart = { x: 0, z: 0, heading: 0, speed: 0 }
-  for (let i = 0; i < 180; i++) kart = stepKart(kart, { forward: true, back: false, left: true, right: false, drift: false }, 1 / 60)
+  for (let i = 0; i < 180; i++) kart = stepKart(kart, { forward: true, back: false, left: true, right: false, drift: false, fire: false }, 1 / 60)
   assert.ok(kart.speed <= MAX_SPEED && kart.speed > 25)
   assert.equal(Math.round(kart.speed * KPH_PER_UNIT), 150)
   assert.notEqual(kart.heading, 0)
@@ -12,7 +12,7 @@ test('kart accelerates, turns, and respects top speed', () => {
 })
 
 test('drift creates slip and reverse brakes before backing up', () => {
-  const controls = { forward: true, back: false, left: true, right: false, drift: true }
+  const controls = { forward: true, back: false, left: true, right: false, drift: true, fire: false }
   let kart: KartState = { x: 0, z: 0, heading: 0, speed: 20, drift: 0 }
   let gripKart: KartState = { ...kart }
   for (let i = 0; i < 30; i++) kart = stepKart(kart, controls, 1 / 60)

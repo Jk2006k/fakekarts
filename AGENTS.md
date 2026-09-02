@@ -17,6 +17,7 @@
 - `src/game/obstacles.ts` owns playground props, ramps, and obstacle collisions.
 - `src/game/physics.ts` owns deterministic kart movement.
 - `src/game/settings.ts` owns persisted player settings and settings UI bindings.
+- `src/game/weapon.ts` owns the mounted pistol, bullets, and weapon animation.
 - `src/game/input.ts` maps keyboard and touch input to controls.
 - `src/game/hud.ts` updates in-game interface values.
 - `src/game/multiplayer.ts` owns peer discovery and state transport.

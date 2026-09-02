@@ -10,6 +10,7 @@ import { Multiplayer, type Peer } from './multiplayer'
 import { createObstacles, rampHeightAt, rampPitchAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
 import { stepGravity, stepKart, type Controls, type KartState } from './physics'
 import type { GameSettings } from './settings'
+import { WeaponSystem } from './weapon'
 
 export class Game {
   private scene = new THREE.Scene()
@@ -18,12 +19,13 @@ export class Game {
   private chaseCamera = new ChaseCamera(this.camera)
   private effects = new Effects(this.scene)
   private kart = createKart('#ff5a4f')
+  private weapon = new WeaponSystem(this.scene, this.kart, this.effects)
   private rival = createKart('#30a9ff')
   private remotes = new Map<string, THREE.Group>()
   private multiplayer: Multiplayer
   private obstacles: Obstacle[]
   private state: KartState = { x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0 }
-  private controls: Controls = { forward: false, back: false, left: false, right: false, drift: false }
+  private controls: Controls = { forward: false, back: false, left: false, right: false, drift: false, fire: false }
   private clock = new THREE.Clock()
   private running = false
   private aiAngle = 0
@@ -99,6 +101,7 @@ export class Game {
     this.chaseCamera.update(this.state, dt, this.settings)
     this.effects.exhaust(this.state, dt)
     this.effects.drift(this.state, dt)
+    this.weapon.update(this.state, this.obstacles, this.controls.fire, dt)
     this.effects.update(dt)
 
     this.lastSend += dt

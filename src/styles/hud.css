@@ -12,6 +12,10 @@
 .speed i { display: block; height: 100%; width: 0; background: #ffd447; transition: width .1s; }
 .drift-status { position: absolute; left: 50%; bottom: 35px; padding: 8px 14px; opacity: 0; color: #26324a; background: #ffd447; border-radius: 6px; font: 13px 'Archivo Black'; letter-spacing: 2px; transform: translate(-50%, 12px) skew(-8deg); transition: .15s; }
 .drift-status.active { opacity: 1; transform: translate(-50%, 0) skew(-8deg); }
+.weapon-hud { position: absolute; left: 30px; bottom: 28px; display: grid; grid-template-columns: auto auto; padding: 10px 13px; background: rgba(9,29,45,.72); border: 1px solid rgba(255,255,255,.18); border-radius: 8px; }
+.weapon-hud small { grid-column: 1 / -1; color: #8bd7ff; font-size: 8px; letter-spacing: 2px; }
+.weapon-hud b { font: 14px 'Archivo Black'; }.weapon-hud span { margin-left: 14px; color: #ffd447; font-size: 17px; }
+.crosshair { position: absolute; left: 50%; top: 47%; width: 30px; height: 30px; color: rgba(255,255,255,.8); border: 2px solid rgba(255,255,255,.55); border-radius: 50%; font: 20px/25px monospace; text-align: center; transform: translate(-50%,-50%); text-shadow: 0 1px 3px #17253b; }
 .players { position: absolute; top: 95px; right: 28px; display: grid; gap: 7px; font-size: 9px; text-align: right; }
 .players span { background: rgba(9,29,45,.55); padding: 6px 9px; border-radius: 4px; }
 .players i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; }
@@ -40,6 +44,7 @@
 .controls { display: none; position: fixed; z-index: 7; inset: auto 18px 20px; justify-content: space-between; pointer-events: none; }
 .controls button { pointer-events: auto; width: 62px; height: 62px; border: 1px solid rgba(255,255,255,.4); border-radius: 15px; color: #fff; background: rgba(10,25,40,.5); font-size: 24px; backdrop-filter: blur(8px); }
 .controls .drift-control { width: 76px; margin-left: 8px; color: #26324a; background: #ffd447; border-color: #fff0a8; font-size: 11px; font-weight: 900; }
+.controls .fire-control { width: 70px; color: #fff; background: #ff5a4f; border-color: #ffb1aa; font-size: 11px; font-weight: 900; }
 .controls div { display: flex; gap: 8px; margin-left: auto; }
 
 @media (pointer: coarse) { .controls.active { display: flex; } .speed { bottom: 100px; } }

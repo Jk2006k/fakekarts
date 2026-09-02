@@ -109,8 +109,7 @@ export function resolveObstacleCollisions(state: KartState, obstacles: Obstacle[
     if (distance >= collisionRadius) continue
     if (obstacle.breakable && Math.abs(state.speed) > 7) {
       // ponytail: crate destruction is client-local, broadcast obstacle events when matches need authoritative shared state.
-      obstacle.broken = true
-      obstacle.object.visible = false
+      breakObstacle(obstacle)
       state.speed *= .82
       broken.push(obstacle)
       continue
@@ -122,6 +121,15 @@ export function resolveObstacleCollisions(state: KartState, obstacles: Obstacle[
     state.speed *= -.35
   }
   return broken
+}
+
+export function obstacleAt(x: number, y: number, z: number, obstacles: Obstacle[]) {
+  return obstacles.find(obstacle => !obstacle.broken && y <= obstacle.height && Math.hypot(x - obstacle.x, z - obstacle.z) <= obstacle.radius)
+}
+
+export function breakObstacle(obstacle: Obstacle) {
+  obstacle.broken = true
+  obstacle.object.visible = false
 }
 
 export function rampHeightAt(x: number, z: number) {
