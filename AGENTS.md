@@ -11,6 +11,8 @@
 
 - `src/game/Game.ts` only coordinates the render loop and game systems.
 - `src/game/arena.ts` owns arena geometry, lighting, and arena boundaries.
+- `src/game/camera.ts` owns chase camera behavior.
+- `src/game/effects.ts` owns short-lived smoke and debris.
 - `src/game/kart.ts` owns the procedural kart model.
 - `src/game/obstacles.ts` owns playground props, ramps, and obstacle collisions.
 - `src/game/physics.ts` owns deterministic kart movement.
