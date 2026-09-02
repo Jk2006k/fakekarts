@@ -16,6 +16,7 @@
 - `src/game/kart.ts` owns the procedural kart model.
 - `src/game/obstacles.ts` owns playground props, ramps, and obstacle collisions.
 - `src/game/physics.ts` owns deterministic kart movement.
+- `src/game/settings.ts` owns persisted player settings and settings UI bindings.
 - `src/game/input.ts` maps keyboard and touch input to controls.
 - `src/game/hud.ts` updates in-game interface values.
 - `src/game/multiplayer.ts` owns peer discovery and state transport.
@@ -23,6 +24,7 @@
 - `src/styles/base.css` owns the canvas and top bar.
 - `src/styles/menu.css` owns the start menu.
 - `src/styles/hud.css` owns race HUD and touch controls.
+- `src/styles/settings.css` owns the settings dialog.
 - `index.html` owns static UI structure.
 
 ## Working together

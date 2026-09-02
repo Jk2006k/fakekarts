@@ -10,6 +10,8 @@
 .speed span { font-size: 9px; display: block; color: #d4e5ef; }
 .speed div { margin-top: 8px; width: 150px; height: 5px; background: rgba(255,255,255,.25); transform: skew(-20deg); }
 .speed i { display: block; height: 100%; width: 0; background: #ffd447; transition: width .1s; }
+.drift-status { position: absolute; left: 50%; bottom: 35px; padding: 8px 14px; opacity: 0; color: #26324a; background: #ffd447; border-radius: 6px; font: 13px 'Archivo Black'; letter-spacing: 2px; transform: translate(-50%, 12px) skew(-8deg); transition: .15s; }
+.drift-status.active { opacity: 1; transform: translate(-50%, 0) skew(-8deg); }
 .players { position: absolute; top: 95px; right: 28px; display: grid; gap: 7px; font-size: 9px; text-align: right; }
 .players span { background: rgba(9,29,45,.55); padding: 6px 9px; border-radius: 4px; }
 .players i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; }

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { KartState } from './physics'
+import type { GameSettings } from './settings'
 
 export class ChaseCamera {
   private lookAt = new THREE.Vector3()
@@ -12,12 +13,12 @@ export class ChaseCamera {
     this.camera.lookAt(this.lookAt)
   }
 
-  update(state: KartState, dt: number) {
+  update(state: KartState, dt: number, settings: GameSettings) {
     const speed = Math.abs(state.speed)
-    const distance = 12 + speed * .06
+    const distance = settings.cameraDistance + speed * .06
     const desired = new THREE.Vector3(
       state.x - Math.sin(state.heading) * distance,
-      (state.y ?? 0) + 6.5 + speed * .025,
+      (state.y ?? 0) + settings.cameraHeight + speed * .025,
       state.z - Math.cos(state.heading) * distance,
     )
     const focus = new THREE.Vector3(
