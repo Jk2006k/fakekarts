@@ -1,5 +1,6 @@
 import mqtt, { type MqttClient } from 'mqtt'
 import type { KartState } from './physics'
+import { generateRoomCode } from './roomCode'
 
 export type Peer = KartState & { id: string; name: string; score: number; seen: number }
 
@@ -7,12 +8,6 @@ type RoomMessage =
   | { type: 'state'; player: Omit<Peer, 'seen'> }
   | { type: 'left'; id: string }
   | { type: 'start'; startAt: number }
-
-const generateRoomCode = () => {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  const bytes = crypto.getRandomValues(new Uint8Array(6))
-  return [...bytes].map(value => alphabet[value % alphabet.length]).join('')
-}
 
 export class Multiplayer {
   readonly peers = new Map<string, Peer>()
