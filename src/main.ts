@@ -1,7 +1,9 @@
 import './styles/base.css'
 import './styles/menu.css'
 import './styles/hud.css'
+import './styles/settings.css'
 import { Game } from './game/Game'
+import { setupSettings } from './game/settings'
 
 const byId = <T extends HTMLElement>(id: string) => document.querySelector<T>(`#${id}`)!
 const name = byId<HTMLInputElement>('name')
@@ -15,7 +17,8 @@ const roomStatus = byId('room-status')
 const presenceToast = byId('presence-toast')
 const joinError = byId('join-error')
 room.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase()
-const game = new Game(byId<HTMLCanvasElement>('world'), () => name.value.trim() || 'Rookie')
+const settings = setupSettings()
+const game = new Game(byId<HTMLCanvasElement>('world'), () => name.value.trim() || 'Rookie', settings)
 
 let countdownRunning = false
 let raceActive = false

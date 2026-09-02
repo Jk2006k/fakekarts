@@ -9,6 +9,7 @@ import { createKart } from './kart'
 import { Multiplayer, type Peer } from './multiplayer'
 import { createObstacles, rampHeightAt, rampPitchAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
 import { stepGravity, stepKart, type Controls, type KartState } from './physics'
+import type { GameSettings } from './settings'
 
 export class Game {
   private scene = new THREE.Scene()
@@ -30,7 +31,7 @@ export class Game {
   private distanceTravelled = 0
   private groundHeight = 0
 
-  constructor(canvas: HTMLCanvasElement, name: () => string) {
+  constructor(canvas: HTMLCanvasElement, name: () => string, private settings: GameSettings) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
@@ -78,7 +79,7 @@ export class Game {
   private update(dt: number) {
     const previousX = this.state.x
     const previousZ = this.state.z
-    this.state = stepKart(this.state, this.controls, dt)
+    this.state = stepKart(this.state, this.controls, dt, this.settings)
     containInArena(this.state)
     for (const obstacle of resolveObstacleCollisions(this.state, this.obstacles)) this.effects.crateBurst(obstacle.x, obstacle.z)
     const groundHeight = rampHeightAt(this.state.x, this.state.z)
@@ -87,6 +88,7 @@ export class Game {
     this.distanceTravelled += Math.hypot(this.state.x - previousX, this.state.z - previousZ)
     this.kart.position.set(this.state.x, .12 + (this.state.y ?? 0), this.state.z)
     this.kart.rotation.y = this.state.heading
+    this.kart.rotation.z = THREE.MathUtils.lerp(this.kart.rotation.z, -(this.state.drift ?? 0) * .12, 1 - Math.exp(-9 * dt))
     const airbornePitch = -(this.state.verticalSpeed ?? 0) * .035
     this.kart.rotation.x = THREE.MathUtils.lerp(this.kart.rotation.x, groundHeight ? rampPitchAt(this.state.x, this.state.z, this.state.heading) : airbornePitch, 1 - Math.exp(-10 * dt))
 
@@ -94,7 +96,7 @@ export class Game {
     this.rival.position.set(Math.sin(this.aiAngle) * 28, .12, Math.cos(this.aiAngle) * 28)
     this.rival.rotation.y = this.aiAngle + Math.PI / 2
 
-    this.chaseCamera.update(this.state, dt)
+    this.chaseCamera.update(this.state, dt, this.settings)
     this.effects.exhaust(this.state, dt)
     this.effects.drift(this.state, dt)
     this.effects.update(dt)
@@ -102,7 +104,7 @@ export class Game {
     this.lastSend += dt
     if (this.lastSend > .08) { this.multiplayer.send(this.state, Math.round(this.distanceTravelled)); this.lastSend = 0 }
     this.syncPeers(dt)
-    updateHud(this.state.speed, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
+    updateHud(this.state.speed, this.state.drift ?? 0, this.multiplayer.peers.values(), this.multiplayer.id, this.distanceTravelled)
   }
 
   private syncPeers(dt: number) {

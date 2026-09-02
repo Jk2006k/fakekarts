@@ -1,0 +1,11 @@
+.header-actions { display: flex; gap: 8px; }
+.settings-panel { width: min(390px, calc(100% - 32px)); padding: 0; overflow: hidden; color: #fff; background: #17253b; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; box-shadow: 0 24px 80px rgba(5,13,28,.55); }
+.settings-panel::backdrop { background: rgba(4,12,24,.65); backdrop-filter: blur(8px); }
+.settings-panel form { padding: 24px; }
+.settings-panel header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.settings-panel h2 { margin: 0; font: 20px 'Archivo Black'; letter-spacing: -.5px; }
+.settings-panel header button { width: 34px; height: 34px; color: #fff; background: rgba(255,255,255,.08); border: 0; border-radius: 50%; cursor: pointer; }
+.setting { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 17px 0; color: #d8e7f0; font-size: 11px; }
+.setting output { color: #ffd447; }
+.setting input { grid-column: 1 / -1; width: 100%; accent-color: #ff5a4f; cursor: pointer; }
+.reset-settings { width: 100%; margin-top: 10px; padding: 11px; color: #bcd0dd; background: transparent; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; cursor: pointer; }
