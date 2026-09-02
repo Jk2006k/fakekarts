@@ -10,18 +10,40 @@ const joinButton = byId<HTMLButtonElement>('join-room')
 const createButton = byId<HTMLButtonElement>('create-room')
 const startButton = byId<HTMLButtonElement>('start-room')
 const lobby = byId('lobby')
+const lobbyPlayers = byId('lobby-players')
 const roomStatus = byId('room-status')
+const presenceToast = byId('presence-toast')
 const joinError = byId('join-error')
 room.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase()
 const game = new Game(byId<HTMLCanvasElement>('world'), () => name.value.trim() || 'Rookie')
 
 let countdownRunning = false
+let raceActive = false
+let toastTimer = 0
+
+const renderRoster = (players: Array<{ name: string }>) => {
+  lobbyPlayers.replaceChildren()
+  for (const playerName of [`${name.value.trim() || 'Rookie'} (YOU)`, ...players.map(player => player.name)]) {
+    const row = document.createElement('span')
+    row.append(document.createElement('i'), playerName)
+    lobbyPlayers.append(row)
+  }
+}
+
+game.onRosterChange(renderRoster)
+game.onPresence((playerName, action) => {
+  if (!raceActive) return
+  clearTimeout(toastTimer)
+  presenceToast.textContent = `${playerName} ${action === 'joined' ? 'joined the room' : 'left the room'}`
+  presenceToast.className = `presence-toast ${action} show`
+  toastTimer = window.setTimeout(() => { presenceToast.className = 'presence-toast' }, 2000)
+})
 
 const runCountdown = async (startAt: number) => {
   if (countdownRunning) return
   countdownRunning = true
   await new Promise(resolve => setTimeout(resolve, Math.max(0, startAt - Date.now())))
-  byId('menu').classList.add('leaving')
+  lobby.classList.add('hidden')
   const countdown = byId('countdown')
   for (const word of ['3', '2', '1', 'GO!']) {
     countdown.textContent = word
@@ -33,6 +55,7 @@ const runCountdown = async (startAt: number) => {
   byId('hud').classList.remove('hidden')
   document.querySelector('.controls')!.classList.add('active')
   game.start()
+  raceActive = true
 }
 
 game.onRaceStart(runCountdown)
@@ -45,6 +68,7 @@ const enterLobby = async (action: () => Promise<string>, isOwner: boolean) => {
     const joinedRoom = await action()
     room.value = joinedRoom
     byId('room-name').textContent = joinedRoom
+    byId('lobby-room-code').textContent = joinedRoom
     history.replaceState(null, '', `${location.pathname}?room=${encodeURIComponent(joinedRoom)}`)
   } catch (error) {
     joinError.textContent = error instanceof Error ? error.message : 'Could not connect to the room.'
@@ -53,8 +77,10 @@ const enterLobby = async (action: () => Promise<string>, isOwner: boolean) => {
     joinButton.querySelector('span')!.textContent = 'JOIN ROOM'
     return
   }
-  document.querySelector('.room-actions')!.classList.add('hidden')
-  lobby.classList.remove('hidden')
+  byId('menu').classList.add('hidden')
+  byId('hud').classList.remove('hidden')
+  renderRoster([])
+  if (!countdownRunning) lobby.classList.remove('hidden')
   roomStatus.textContent = isOwner ? 'ROOM READY — SHARE THE CODE, THEN START' : 'WAITING FOR THE OWNER TO START…'
   if (isOwner) startButton.classList.remove('hidden')
 }
@@ -87,3 +113,5 @@ byId('sound').addEventListener('click', event => {
   button.classList.toggle('muted')
   button.textContent = button.classList.contains('muted') ? '×' : '♪'
 })
+
+addEventListener('pagehide', () => game.disconnect())

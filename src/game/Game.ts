@@ -6,7 +6,7 @@ import { updateHud } from './hud'
 import { bindControls } from './input'
 import { shortestTurn, smoothingFactor } from './interpolation'
 import { createKart } from './kart'
-import { Multiplayer } from './multiplayer'
+import { Multiplayer, type Peer } from './multiplayer'
 import { createObstacles, rampHeightAt, rampPitchAt, resolveObstacleCollisions, type Obstacle } from './obstacles'
 import { stepGravity, stepKart, type Controls, type KartState } from './physics'
 
@@ -52,7 +52,13 @@ export class Game {
 
   onRaceStart(handler: (startAt: number) => void) { this.multiplayer.onRaceStart(handler) }
 
+  onRosterChange(handler: (players: Peer[]) => void) { this.multiplayer.onRosterChange(handler) }
+
+  onPresence(handler: (name: string, action: 'joined' | 'left') => void) { this.multiplayer.onPresence(handler) }
+
   startRoomRace() { this.multiplayer.startRace() }
+
+  disconnect() { this.multiplayer.disconnect() }
 
   start() { this.running = true }
 

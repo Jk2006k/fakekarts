@@ -35,15 +35,22 @@
           <button id="create-room" class="create-button">CREATE ROOM</button>
           <button id="join-room" class="race-button"><span>JOIN ROOM</span><b>›</b></button>
         </div>
-        <div id="lobby" class="lobby hidden">
-          <p id="room-status">WAITING FOR THE OWNER TO START…</p>
-          <button id="start-room" class="race-button hidden"><span>START RACE</span><b>›</b></button>
-        </div>
         <p id="join-error" class="join-error" role="alert"></p>
         <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · <kbd>SPACE</kbd> to drift</p>
       </section>
 
+      <section id="lobby" class="arena-lobby hidden" aria-label="Room lobby">
+        <div class="lobby-card">
+          <p class="eyebrow">ROOM <strong id="lobby-room-code"></strong></p>
+          <h2>PLAYERS</h2>
+          <div id="lobby-players" class="lobby-players"></div>
+          <p id="room-status">WAITING FOR THE OWNER TO START…</p>
+          <button id="start-room" class="race-button hidden"><span>START RACE</span><b>›</b></button>
+        </div>
+      </section>
+
       <div id="countdown" class="countdown" aria-live="assertive"></div>
+      <div id="presence-toast" class="presence-toast" role="status" aria-live="polite"></div>
       <div class="controls" aria-label="Touch controls">
         <button data-key="left" aria-label="Turn left">←</button>
         <button class="drift-control" data-key="drift" aria-label="Drift">DRIFT</button>
