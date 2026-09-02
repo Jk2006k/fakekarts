@@ -1,4 +1,4 @@
-export type KartState = { x: number; z: number; heading: number; speed: number; y?: number; verticalSpeed?: number; drift?: number }
+export type KartState = { x: number; z: number; heading: number; speed: number; y?: number; verticalSpeed?: number; drift?: number; health?: number }
 export type Controls = { forward: boolean; back: boolean; left: boolean; right: boolean; drift: boolean; fire: boolean }
 export type Handling = { steeringSensitivity: number; driftStrength: number }
 export const KPH_PER_UNIT = 5.1

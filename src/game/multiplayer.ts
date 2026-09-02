@@ -8,6 +8,7 @@ type RoomMessage =
   | { type: 'state'; player: Omit<Peer, 'seen'> }
   | { type: 'left'; id: string }
   | { type: 'start'; startAt: number }
+  | { type: 'hit'; id: string; targetId: string; attackerId: string; damage: number }
 
 export class Multiplayer {
   readonly peers = new Map<string, Peer>()
@@ -20,9 +21,11 @@ export class Multiplayer {
   private presenceHandler: (name: string, action: 'joined' | 'left') => void = () => {}
   private heartbeat?: number
   private localPlayer: Omit<Peer, 'seen'>
+  private damageHandler: (damage: number, attackerId: string) => void = () => {}
+  private seenHits = new Set<string>()
 
   constructor(private name: () => string) {
-    this.localPlayer = { id: this.id, name: this.name(), x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0, score: 0 }
+    this.localPlayer = { id: this.id, name: this.name(), x: 0, y: 0, z: 12, heading: 0, speed: 0, verticalSpeed: 0, health: 100, score: 0 }
   }
 
   async createRoom() {
@@ -44,6 +47,15 @@ export class Multiplayer {
 
   onPresence(handler: (name: string, action: 'joined' | 'left') => void) {
     this.presenceHandler = handler
+  }
+
+  onDamage(handler: (damage: number, attackerId: string) => void) { this.damageHandler = handler }
+
+  hitOpponent(targetId: string, damage: number) {
+    if (!this.client?.connected) return
+    // ponytail: hits are client-authoritative; move validation to a trusted match server before ranked play.
+    const message: RoomMessage = { type: 'hit', id: crypto.randomUUID(), targetId, attackerId: this.id, damage }
+    this.client.publish(this.topic, JSON.stringify(message), { qos: 1 })
   }
 
   startRace() {
@@ -114,6 +126,10 @@ export class Multiplayer {
       this.removePeer(message.id)
     } else if (message.type === 'start' && Number.isFinite(message.startAt)) {
       this.startHandler(message.startAt)
+    } else if (message.type === 'hit' && message.targetId === this.id && message.attackerId !== this.id && !this.seenHits.has(message.id)) {
+      this.seenHits.add(message.id)
+      if (this.seenHits.size > 100) this.seenHits.delete(this.seenHits.values().next().value!)
+      this.damageHandler(Math.max(0, Math.min(100, Number(message.damage) || 0)), message.attackerId)
     }
   }
 

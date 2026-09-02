@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { PISTOL_DAMAGE } from './combat.js'
 import type { Effects } from './effects'
 import { breakObstacle, obstacleAt, type Obstacle } from './obstacles.js'
 import type { KartState } from './physics'
 
 type Bullet = { mesh: THREE.Mesh; velocity: THREE.Vector3; life: number }
+export type WeaponTarget = { id: string; object: THREE.Object3D }
 
 export const stepBullet = (position: THREE.Vector3, velocity: THREE.Vector3, dt: number) => {
   position.addScaledVector(velocity, dt)
@@ -29,7 +31,7 @@ export class WeaponSystem {
 
   get bulletCount() { return this.bullets.length }
 
-  update(state: KartState, obstacles: Obstacle[], firing: boolean, dt: number) {
+  update(state: KartState, obstacles: Obstacle[], targets: WeaponTarget[], firing: boolean, dt: number, onHit: (id: string, damage: number) => void) {
     this.cooldown = Math.max(0, this.cooldown - dt)
     this.recoil = Math.max(0, this.recoil - dt * 7)
     this.slide.position.z = .35 - this.recoil * .28
@@ -41,6 +43,18 @@ export class WeaponSystem {
     for (const bullet of this.bullets) {
       bullet.life -= dt
       stepBullet(bullet.mesh.position, bullet.velocity, dt)
+      const target = targets.find(({ object }) => {
+        const dx = bullet.mesh.position.x - object.position.x
+        const dy = bullet.mesh.position.y - object.position.y - 1.2
+        const dz = bullet.mesh.position.z - object.position.z
+        return dx * dx + dy * dy + dz * dz < 4.8
+      })
+      if (target) {
+        this.effects.combatBurst(bullet.mesh.position, false)
+        onHit(target.id, PISTOL_DAMAGE)
+        bullet.life = 0
+        continue
+      }
       const hit = obstacleAt(bullet.mesh.position.x, bullet.mesh.position.y, bullet.mesh.position.z, obstacles)
       if (hit) {
         if (hit.breakable) { breakObstacle(hit); this.effects.crateBurst(hit.x, hit.z) }
@@ -58,7 +72,6 @@ export class WeaponSystem {
   }
 
   private fire(state: KartState) {
-    // ponytail: shots are client-local, broadcast fire events and authoritative damage when player combat is enabled.
     this.holder.updateWorldMatrix(true, true)
     const position = this.muzzle.getWorldPosition(new THREE.Vector3())
     const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(this.muzzle.getWorldQuaternion(new THREE.Quaternion())).normalize()

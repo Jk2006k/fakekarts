@@ -55,6 +55,16 @@ export class Effects {
     )
   }
 
+  combatBurst(position: THREE.Vector3, destroyed: boolean) {
+    const count = destroyed ? 28 : 12
+    for (let i = 0; i < count; i++) this.spawn(
+      position.clone(),
+      new THREE.Vector3((Math.random() - .5) * 10, 2 + Math.random() * 8, (Math.random() - .5) * 10),
+      i < count / 3,
+      i % 2 ? '#ff5a4f' : '#ffd447',
+    )
+  }
+
   muzzleSmoke(position: THREE.Vector3, direction: THREE.Vector3) {
     for (let i = 0; i < 3; i++) this.spawn(position.clone(), direction.clone().multiplyScalar(2 + Math.random() * 2).add(new THREE.Vector3(0, .7, 0)), true)
   }
