@@ -1,0 +1,23 @@
+.hud { position: fixed; z-index: 4; inset: 0; pointer-events: none; }
+.position { position: absolute; left: 30px; top: 95px; font: 20px 'Archivo Black'; }
+.position strong { font-size: 68px; line-height: .8; }
+.position small { display: block; font: 8px 'DM Mono'; letter-spacing: 2px; margin-top: 8px; }
+.lap { position: absolute; top: 95px; left: 130px; border-left: 1px solid rgba(255,255,255,.4); padding-left: 22px; }
+.lap small { font-size: 8px; letter-spacing: 2px; display: block; color: #bfd6e3; }
+.lap b { font: 20px 'Archivo Black'; }
+.speed { position: absolute; right: 30px; bottom: 28px; text-align: right; }
+.speed strong { font: 54px 'Archivo Black'; }
+.speed span { font-size: 9px; display: block; color: #d4e5ef; }
+.speed div { margin-top: 8px; width: 150px; height: 5px; background: rgba(255,255,255,.25); transform: skew(-20deg); }
+.speed i { display: block; height: 100%; width: 0; background: #ffd447; transition: width .1s; }
+.players { position: absolute; top: 95px; right: 28px; display: grid; gap: 7px; font-size: 9px; text-align: right; }
+.players span { background: rgba(9,29,45,.55); padding: 6px 9px; border-radius: 4px; }
+.players i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; }
+.countdown { position: fixed; z-index: 8; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.5); opacity: 0; font: 130px 'Archivo Black'; color: #ffd447; -webkit-text-stroke: 5px #263b55; text-shadow: 0 10px 0 #263b55; transition: .15s; }
+.countdown.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.controls { display: none; position: fixed; z-index: 7; inset: auto 18px 20px; justify-content: space-between; pointer-events: none; }
+.controls button { pointer-events: auto; width: 62px; height: 62px; border: 1px solid rgba(255,255,255,.4); border-radius: 15px; color: #fff; background: rgba(10,25,40,.5); font-size: 24px; backdrop-filter: blur(8px); }
+.controls div { display: flex; gap: 8px; margin-left: auto; }
+
+@media (pointer: coarse) { .controls.active { display: flex; } .speed { bottom: 100px; } }
+@media (max-width: 700px) { .players { top: 80px; } .position, .lap { top: 82px; left: 18px; } .lap { left: 104px; } }

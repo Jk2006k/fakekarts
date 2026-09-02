@@ -1,4 +1,6 @@
-import './style.css'
+import './styles/base.css'
+import './styles/menu.css'
+import './styles/hud.css'
 import { Game } from './game/Game'
 
 const byId = <T extends HTMLElement>(id: string) => document.querySelector<T>(`#${id}`)!
