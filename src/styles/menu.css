@@ -1,0 +1,17 @@
+.menu { position: fixed; z-index: 4; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(90deg, rgba(7,30,50,.83), rgba(7,30,50,.22) 60%, transparent); width: 48%; min-width: 560px; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); padding-right: 90px; transition: transform .5s ease, opacity .4s; }
+.menu.leaving { transform: translateX(-110%); opacity: 0; }
+.eyebrow { font-size: 11px; letter-spacing: 5px; margin: 0 0 10px; color: #b9e7ff; }
+h1 { font: 86px/.72 'Archivo Black'; letter-spacing: -7px; margin: 0; text-align: center; transform: skew(-5deg); text-shadow: 0 7px 0 #22344e, 0 12px 30px rgba(0,0,0,.25); }
+h1 em { color: #ffd447; font-style: normal; }
+.tagline { margin: 25px 0; color: #d2f0ff; font-size: 13px; }
+.name-field { width: 280px; font-size: 9px; letter-spacing: 2px; color: #91c9e7; }
+.name-field input { width: 100%; display: block; margin-top: 7px; border: 1px solid rgba(255,255,255,.28); border-radius: 7px; padding: 12px 14px; background: rgba(0,18,34,.45); color: white; outline: none; text-transform: uppercase; }
+.name-field input:focus { border-color: #ffd447; }
+.race-button { width: 280px; display: flex; justify-content: space-between; align-items: center; border: 0; border-radius: 8px; padding: 14px 14px 14px 22px; margin-top: 12px; background: #ff5a4f; color: #fff; box-shadow: 0 5px 0 #b93739, 0 12px 25px rgba(0,0,0,.24); cursor: pointer; letter-spacing: 1px; transition: transform .15s; }
+.race-button:hover { transform: translateY(-2px); }
+.race-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b93739; }
+.race-button b { display: grid; place-items: center; background: #fff; color: #ff5a4f; width: 28px; height: 28px; border-radius: 5px; font-size: 25px; }
+.hint { font-size: 9px; color: #98bad0; margin-top: 25px; }
+kbd { border: 1px solid #7290a3; padding: 3px 5px; border-radius: 3px; color: #dff5ff; }
+
+@media (max-width: 700px) { .menu { min-width: 0; width: 100%; padding: 0 20px; clip-path: none; background: rgba(7,30,50,.55); } h1 { font-size: 65px; } .hint { text-align: center; max-width: 280px; line-height: 2; } }

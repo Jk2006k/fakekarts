@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "rm -rf .check && tsc --outDir .check --noEmit false && node --test .check/game/physics.test.js",
+    "test": "rm -rf .check && tsc --outDir .check --noEmit false && node --test .check/game/*.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@500&display=swap');
+
+:root { font-family: 'DM Mono', monospace; color: #fff; background: #88d8ff; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; }
+button, input { font: inherit; }
+#game, #world { position: fixed; inset: 0; width: 100%; height: 100%; }
+#world { filter: saturate(1.08); }
+#game::after { content: ''; pointer-events: none; position: fixed; inset: 0; background: linear-gradient(180deg, rgba(0,37,66,.18), transparent 30%, transparent 68%, rgba(4,13,24,.35)); }
+.hidden { display: none !important; }
+.topbar { position: fixed; z-index: 5; inset: 0 0 auto; padding: 25px 32px; display: flex; align-items: center; justify-content: space-between; }
+.brand { color: #fff; text-decoration: none; font: 22px 'Archivo Black'; letter-spacing: -1px; text-shadow: 0 3px 0 #263c59; display: flex; align-items: center; }
+.brand i { width: 17px; height: 17px; margin-right: 8px; background: #ff5a4f; border: 4px solid white; border-radius: 4px; transform: rotate(12deg); box-shadow: 0 2px #263c59; }
+.brand span { color: #ffd447; }
+.room { background: rgba(20,39,58,.8); border: 1px solid rgba(255,255,255,.22); border-radius: 100px; padding: 9px 15px; font-size: 10px; letter-spacing: 1px; backdrop-filter: blur(8px); }
+.room b { color: #8bd7ff; }
+.pulse { display: inline-block; width: 7px; height: 7px; background: #58ef8b; border-radius: 50%; margin-right: 6px; box-shadow: 0 0 0 4px rgba(88,239,139,.18); }
+.icon-button { color: white; width: 38px; height: 38px; border-radius: 50%; background: rgba(20,39,58,.72); border: 1px solid rgba(255,255,255,.25); cursor: pointer; font-size: 18px; }
+
+@media (max-width: 700px) { .topbar { padding: 18px; } .room { display: none; } }
