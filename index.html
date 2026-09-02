@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#8bd8ff" />
+    <meta name="description" content="FakeKarts — a tiny multiplayer toon racer." />
+    <title>FakeKarts</title>
+  </head>
+  <body>
+    <main id="game" aria-label="FakeKarts game">
+      <canvas id="world"></canvas>
+
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="FakeKarts home"><i></i>FAKE<span>KARTS</span></a>
+        <div class="room"><span class="pulse"></span> ROOM <b>TOON-01</b></div>
+        <button id="sound" class="icon-button" aria-label="Toggle sound">♪</button>
+      </header>
+
+      <section id="hud" class="hud hidden" aria-live="polite">
+        <div class="position"><strong id="position">1</strong><span>/ 2</span><small>POSITION</small></div>
+        <div class="lap"><small>LAP</small><b id="lap">1 / 3</b></div>
+        <div class="speed"><strong id="speed">0</strong><span>KM/H</span><div><i id="speedbar"></i></div></div>
+        <div class="players" id="players"></div>
+      </section>
+
+      <section id="menu" class="menu">
+        <p class="eyebrow">WELCOME TO</p>
+        <h1>FAKE<br /><em>KARTS</em></h1>
+        <p class="tagline">Tiny wheels. Big feelings.</p>
+        <label class="name-field">DRIVER NAME<input id="name" maxlength="12" value="Mohan" /></label>
+        <button id="race" class="race-button"><span>RACE NOW</span><b>›</b></button>
+        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · open another tab for multiplayer</p>
+      </section>
+
+      <div id="countdown" class="countdown" aria-live="assertive"></div>
+      <div class="controls" aria-label="Touch controls">
+        <button data-key="left" aria-label="Turn left">←</button>
+        <div><button data-key="up" aria-label="Accelerate">↑</button><button data-key="down" aria-label="Brake">↓</button></div>
+        <button data-key="right" aria-label="Turn right">→</button>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
