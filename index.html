@@ -13,7 +13,7 @@
 
       <header class="topbar">
         <a class="brand" href="/" aria-label="FakeKarts home"><i></i>FAKE<span>KARTS</span></a>
-        <div class="room"><span class="pulse"></span> ROOM <b>TOON-01</b></div>
+        <div class="room"><span class="pulse"></span> ROOM <b id="room-name">NOT JOINED</b></div>
         <button id="sound" class="icon-button" aria-label="Toggle sound">♪</button>
       </header>
 
@@ -29,14 +29,16 @@
         <h1>FAKE<br /><em>KARTS</em></h1>
         <p class="tagline">Tiny wheels. Big feelings.</p>
         <label class="name-field">DRIVER NAME<input id="name" maxlength="12" value="Mohan" /></label>
-        <button id="race" class="race-button"><span>RACE NOW</span><b>›</b></button>
-        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · open another tab for multiplayer</p>
+        <label class="name-field room-field">ROOM CODE<input id="room-code" maxlength="16" autocomplete="off" spellcheck="false" /></label>
+        <button id="join-room" class="race-button"><span>JOIN ROOM</span><b>›</b></button>
+        <p id="join-error" class="join-error" role="alert"></p>
+        <p class="hint"><kbd>WASD</kbd> or <kbd>ARROWS</kbd> to drive · share the room code with friends</p>
       </section>
 
       <div id="countdown" class="countdown" aria-live="assertive"></div>
       <div class="controls" aria-label="Touch controls">
         <button data-key="left" aria-label="Turn left">←</button>
-        <div><button data-key="up" aria-label="Accelerate">↑</button><button data-key="down" aria-label="Brake">↓</button></div>
+        <div><button data-key="forward" aria-label="Accelerate">↑</button><button data-key="back" aria-label="Brake">↓</button></div>
         <button data-key="right" aria-label="Turn right">→</button>
       </div>
     </main>

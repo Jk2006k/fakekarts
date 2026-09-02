@@ -7,10 +7,13 @@ h1 em { color: #ffd447; font-style: normal; }
 .name-field { width: 280px; font-size: 9px; letter-spacing: 2px; color: #91c9e7; }
 .name-field input { width: 100%; display: block; margin-top: 7px; border: 1px solid rgba(255,255,255,.28); border-radius: 7px; padding: 12px 14px; background: rgba(0,18,34,.45); color: white; outline: none; text-transform: uppercase; }
 .name-field input:focus { border-color: #ffd447; }
+.room-field { margin-top: 12px; }
+.join-error { width: 280px; min-height: 14px; margin: 10px 0 -8px; color: #ffd0ce; font-size: 9px; text-align: center; }
 .race-button { width: 280px; display: flex; justify-content: space-between; align-items: center; border: 0; border-radius: 8px; padding: 14px 14px 14px 22px; margin-top: 12px; background: #ff5a4f; color: #fff; box-shadow: 0 5px 0 #b93739, 0 12px 25px rgba(0,0,0,.24); cursor: pointer; letter-spacing: 1px; transition: transform .15s; }
 .race-button:hover { transform: translateY(-2px); }
 .race-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b93739; }
 .race-button b { display: grid; place-items: center; background: #fff; color: #ff5a4f; width: 28px; height: 28px; border-radius: 5px; font-size: 25px; }
+.race-button:disabled { cursor: wait; opacity: .72; transform: none; }
 .hint { font-size: 9px; color: #98bad0; margin-top: 25px; }
 kbd { border: 1px solid #7290a3; padding: 3px 5px; border-radius: 3px; color: #dff5ff; }
 

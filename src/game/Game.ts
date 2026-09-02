@@ -37,6 +37,8 @@ export class Game {
     this.animate()
   }
 
+  async join(room: string) { return this.multiplayer.connect(room) }
+
   start() { this.running = true }
 
   private resize() {
